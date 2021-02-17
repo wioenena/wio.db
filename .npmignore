@@ -1,0 +1,4 @@
+node_modules
+/*.log
+database.json
+test
