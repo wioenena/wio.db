@@ -1,10 +1,10 @@
 const filePath = `${process.cwd()}/database.json`;
 
-const advertisement = "\nCome here for help => https://discord.gg/8N4cq3weqU";
-
 const { readFileSync, writeFileSync, existsSync, unlinkSync } = require("fs");
 
 const { set, unset, get, cloneDeep } = require("lodash");
+
+const DatabaseError = require("./Error");
 
 /**
  * @param {string} fileName
@@ -57,7 +57,7 @@ const isFunction = (value) => typeof value === "function";
  */
 const parseKey = (key) => {
     if (!isString(key)) {
-        throw new Error(`The key must be string type data.${advertisement}`);
+        throw new DatabaseError(`The key must be string type data.`);
     }
     if (key.includes(".")) {
         const parsedDot = key.split(".");
@@ -73,7 +73,7 @@ const parseKey = (key) => {
  * @returns {any}
  */
 const parseValue = (value) => {
-    if ((!value || value === "") && !isNumber(value)) throw new Error(`The value was specified incorrectly.${advertisement}`);
+    if ((!value || value === "") && !isNumber(value)) throw new DatabaseError(`The value was specified incorrectly.`);
     return value;
 };
 
@@ -88,7 +88,7 @@ const setData = (key, data, value) => {
     if (isObject(data) && parsed.target) {
         return set(data, parsed.target, value);
     } else if (parsed.target) {
-        throw new Error(`${data}'s type is not object.${advertisement}`);
+        throw new DatabaseError(`${data}'s type is not object.`);
     }
     return data;
 }
@@ -104,7 +104,7 @@ const unsetData = (key, data) => {
     if (isObject(data) && parsed.target) {
         unset(cloned, parsed.target);
     } else if (parsed.target) {
-        throw new Error(`${data}'s type is not object.${advertisement}`);
+        throw new DatabaseError(`${data}'s type is not object.`);
     }
     return cloned;
 };
@@ -214,7 +214,7 @@ class Database {
      */
     constructor(databaseName = "database.json") {
         if (!isString(databaseName)) {
-            throw new Error(`Must be a string type json name.${advertisement}`);
+            throw new DatabaseError(`Must be a string type json name.`);
         }
         databaseName.endsWith(".json") ? void 0 : databaseName = `${databaseName}.json`;
         databaseName = `${process.cwd()}/${databaseName}`;
@@ -347,7 +347,7 @@ class Database {
     delete(key) {
         const parsed = parseKey(key);
         if (!this.has(parsed.key)) {
-            throw new Error(`${parsed.key} There is no data with ID, I cannot delete it.${advertisement}`);
+            throw new DatabaseError(`${parsed.key} There is no data with ID, I cannot delete it.`);
         }
         const data = this.get(parsed.key);
         if (parsed.target) {
@@ -398,7 +398,7 @@ class Database {
         /** @type {V[] | V} */
         let data = this.get(key);
         if (!data) return false;
-        if (!Array.isArray(data)) throw new Error(`${key} It is not a data string with an ID.${advertisement}`);
+        if (!Array.isArray(data)) throw new DatabaseError(`${key} It is not a data string with an ID.`);
         if (Array.isArray(value)) {
             // @ts-ignore
             data = data.filter((item) => !value.includes(item));
@@ -444,16 +444,16 @@ class Database {
      * @example db.math("test","/",5,false);
      */
     math(key, operator, value, goToNegative = false) {
-        if (!isNumber(value)) throw new Error(`The type of value is not a number.${advertisement}`);
-        if (value <= 0) throw new Error(`Value cannot be less than 1.${advertisement}`);
+        if (!isNumber(value)) throw new DatabaseError(`The type of value is not a number.`);
+        if (value <= 0) throw new DatabaseError(`Value cannot be less than 1.`);
         value = Number(value);
-        if (!(typeof goToNegative === "boolean")) throw new Error(`The goToNegative parameter must be of boolean type.${advertisement}`);
+        if (!(typeof goToNegative === "boolean")) throw new DatabaseError(`The goToNegative parameter must be of boolean type.`);
         let data = this.get(key);
         if (!data && !isNumber(data)) {
             // @ts-ignore
             return this.set(key, value);
         }
-        if (!isNumber(data)) throw new Error(`${key} ID data is not a number type data.${advertisement}`);
+        if (!isNumber(data)) throw new DatabaseError(`${key} ID data is not a number type data.`);
         // @ts-ignore
         data = Number(data);
         switch (operator) {
@@ -548,8 +548,8 @@ class Database {
      */
     arrayHasValue(key, value) {
         const data = this.get(key);
-        if (!data) throw new Error(`No data with ${key} ID in DataBase.${advertisement}`);
-        if (!Array.isArray(data)) throw new Error(`The data named ${key} in the DataBase is not of type array.${advertisement}`);
+        if (!data) throw new DatabaseError(`No data with ${key} ID in DataBase.`);
+        if (!Array.isArray(data)) throw new DatabaseError(`The data named ${key} in the DataBase is not of type array.`);
         return arrayHasValue(data, value);
     }
 

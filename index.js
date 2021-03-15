@@ -18,7 +18,7 @@ const {
     includes,
     startsWith
 } = require("./src/main.js");
-
+const DatabaseError = require("./src/Error");
 
 
 
@@ -44,5 +44,6 @@ module.exports = {
     valueArray,
     arrayHasValue,
     includes,
-    startsWith
+    startsWith,
+    DatabaseError
 };
