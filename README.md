@@ -84,7 +84,7 @@ db.findAndDelete((key,value) => {
 // Infos
 console.log(db.size);
 console.log(db.totalDBSize);
-console.log(Database.DBCollection);
+console.log(JsonDatabase.DBCollection);
 
 
 // Destroy DB
