@@ -1,6 +1,8 @@
 const filePath = `${process.cwd()}/database.json`;
 
-const { readFileSync, writeFileSync, existssSync, unlinkSync } = require("fs");
+const advertisement = "\nCome here for help => https://discord.gg/8N4cq3weqU";
+
+const { readFileSync, writeFileSync, existsSync, unlinkSync } = require("fs");
 
 const { set, unset, get, cloneDeep } = require("lodash");
 
@@ -55,7 +57,7 @@ const isFunction = (value) => typeof value === "function";
  */
 const parseKey = (key) => {
     if (!isString(key)) {
-        throw new Error("Key string tipli bir veri olmalıdır.");
+        throw new Error(`The key must be string type data.${advertisement}`);
     }
     if (key.includes(".")) {
         const parsedDot = key.split(".");
@@ -71,7 +73,7 @@ const parseKey = (key) => {
  * @returns {any}
  */
 const parseValue = (value) => {
-    if ((!value || value === "") && !isNumber(value)) throw new Error("Value hatalı belirtilmiş.");
+    if ((!value || value === "") && !isNumber(value)) throw new Error(`The value was specified incorrectly.${advertisement}`);
     return value;
 };
 
@@ -86,7 +88,7 @@ const setData = (key, data, value) => {
     if (isObject(data) && parsed.target) {
         return set(data, parsed.target, value);
     } else if (parsed.target) {
-        throw new Error(`${data}'nın tipi object değil.`);
+        throw new Error(`${data}'s type is not object.${advertisement}`);
     }
     return data;
 }
@@ -102,7 +104,7 @@ const unsetData = (key, data) => {
     if (isObject(data) && parsed.target) {
         unset(cloned, parsed.target);
     } else if (parsed.target) {
-        throw new Error(`${data}'nın tipi object değil.`);
+        throw new Error(`${data}'s type is not object.${advertisement}`);
     }
     return cloned;
 };
@@ -212,13 +214,13 @@ class Database {
      */
     constructor(databaseName = "database.json") {
         if (!isString(databaseName)) {
-            throw new Error("String tipli bir json ismi olmalı.");
+            throw new Error(`Must be a string type json name.${advertisement}`);
         }
         databaseName.endsWith(".json") ? void 0 : databaseName = `${databaseName}.json`;
         databaseName = `${process.cwd()}/${databaseName}`;
         this.#databaseName = databaseName;
         this.#handle();
-        Database.DbCollection.push(this);
+        Database.DBCollection.push(this);
     }
 
     /**
@@ -345,7 +347,7 @@ class Database {
     delete(key) {
         const parsed = parseKey(key);
         if (!this.has(parsed.key)) {
-            throw new Error(`${parsed.key} ID'li veri yok, silemem.`);
+            throw new Error(`${parsed.key} There is no data with ID, I cannot delete it.${advertisement}`);
         }
         const data = this.get(parsed.key);
         if (parsed.target) {
@@ -393,17 +395,21 @@ class Database {
      */
     pull(key, value, multiple = true) {
         value = parseValue(value);
+        /** @type {V[] | V} */
         let data = this.get(key);
         if (!data) return false;
-        if (!Array.isArray(data)) throw new Error(`${key} ID'li veri array değil.`);
+        if (!Array.isArray(data)) throw new Error(`${key} It is not a data string with an ID.${advertisement}`);
         if (Array.isArray(value)) {
+            // @ts-ignore
             data = data.filter((item) => !value.includes(item));
+            // @ts-ignore
             return this.set(key, data);
         } else {
             const hasItem = data.some((item) => item === value);
             if (!hasItem) return false;
             const index = data.findIndex((item) => item === value);
             data = data.filter((item, i) => i !== index);
+            // @ts-ignore
             return this.set(key, data);
         }
     }
@@ -438,35 +444,43 @@ class Database {
      * @example db.math("test","/",5,false);
      */
     math(key, operator, value, goToNegative = false) {
-        if (!isNumber(value)) throw new Error(`value'nin tipi sayı değil.`);
-        if (value <= 0) throw new Error(`value 1'den küçük olamaz`);
+        if (!isNumber(value)) throw new Error(`The type of value is not a number.${advertisement}`);
+        if (value <= 0) throw new Error(`Value cannot be less than 1.${advertisement}`);
         value = Number(value);
-        if (!(typeof goToNegative === "boolean")) throw new Error("goToNegative parametresi boolean tipte olmak zorundadır.");
+        if (!(typeof goToNegative === "boolean")) throw new Error(`The goToNegative parameter must be of boolean type.${advertisement}`);
         let data = this.get(key);
         if (!data && !isNumber(data)) {
+            // @ts-ignore
             return this.set(key, value);
         }
-        if (!isNumber(data)) throw new Error(`${key} ID'li veri number tipli bir veri değil`);
+        if (!isNumber(data)) throw new Error(`${key} ID data is not a number type data.${advertisement}`);
+        // @ts-ignore
         data = Number(data);
         switch (operator) {
             case "+":
+                // @ts-ignore
                 data += value;
                 return this.set(key, data);
                 break;
             case "-":
+                // @ts-ignore
                 data -= value;
+                // @ts-ignore
                 if (goToNegative === false && data < 1) data = 0;
                 return this.set(key, data);
                 break;
             case "*":
+                // @ts-ignore
                 data *= value;
                 return this.set(key, data);
                 break;
             case "/":
+                // @ts-ignore
                 data /= value;
                 return this.set(key, data);
                 break;
             case "%":
+                // @ts-ignore
                 data %= value;
                 return this.set(key, data);
                 break;
@@ -512,12 +526,14 @@ class Database {
     push(key, value) {
         const data = this.get(key);
         if (!data) {
+            // @ts-ignore
             return this.set(key, [value]);
         }
         if (Array.isArray(data)) {
             data.push(value);
             return this.set(key, data);
         } else {
+            // @ts-ignore
             return this.set(key, [value]);
         }
     }
@@ -532,8 +548,8 @@ class Database {
      */
     arrayHasValue(key, value) {
         const data = this.get(key);
-        if (!data) throw new Error(`DataBase'de ${key} ID'li veri yok`);
-        if (!Array.isArray(data)) throw new Error(`DataBase'deki ${key} isimli veri array tipinde değil`);
+        if (!data) throw new Error(`No data with ${key} ID in DataBase.${advertisement}`);
+        if (!Array.isArray(data)) throw new Error(`The data named ${key} in the DataBase is not of type array.${advertisement}`);
         return arrayHasValue(data, value);
     }
 
@@ -591,7 +607,7 @@ class Database {
      * @private
      */
     #handle() {
-        if (existssSync(this.#databaseName)) {
+        if (existsSync(this.#databaseName)) {
             return true;
         } else {
             write(this.#databaseName, {});
@@ -619,7 +635,7 @@ class Database {
      * @returns {number}
      */
     get totalDBSize() {
-        return Database.DbCollection.length;
+        return Database.DBCollection.length;
     }
 }
 
