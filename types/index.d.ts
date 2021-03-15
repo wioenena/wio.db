@@ -11,6 +11,7 @@
 
 declare module "wio.db" {
     export class Database<V> {
+        public static DBCollection: Array<Database<unknown>>;
         private databaseName: string;
         public constructor(databaseName?: string);
         private handle(): boolean;
@@ -40,24 +41,11 @@ declare module "wio.db" {
         public destroy(): void;
         public get size(): number;
         public get totalDBSize(): number;
-        public static DBCollection: Array<Database>;
+        public get fileName(): string;
     }
-    
-    export function read(fileName: string): object;
-    export function write(fileName: string, data: object): void;
-    export function isString(value: any): boolean;
-    export function isObject(value: any): boolean;
-    export function isNumber(value: any): boolean;
-    export function isFunction(value: any): boolean;
-    export function parseKey(key: string): { key: string, target?: string };
-    export function parseValue(value: any): any;
-    export function setData(key: string, data: any, value: any): object;
-    export function unsetData(key: string, data: any): object;
-    export function getData(key: string, data: any): any;
-    export function all(arrayData: any[], limit?: number): Array<{ ID: string, data: any }>;
-    export function keyArray(array: any[]): string[];
-    export function valueArray(array: any[]): any[];
-    export function arrayHasValue(data: any, value: any | any[]): boolean | object;
-    export function includes(key: string, keyArray: string[], json: object): object;
-    export function startsWith(key: string, keyArray: string[], json: object): object;
+
+    export class DatabaseError extends Error {
+        public constructor(message: string);
+        public get name(): string;
+    }
 }

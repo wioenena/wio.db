@@ -66,7 +66,7 @@ db.substr("data1", 5);
 
 // DB Finding methods
 
-db.included("da");
+db.includes("da");
 db.startsWith("da");
 db.findAndDelete((key,value) => {
     return key.includes("data");

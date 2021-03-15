@@ -1,6 +1,6 @@
 {
     "name": "wio.db",
-    "version": "4.0.16",
+    "version": "4.0.17",
     "description": "Gözle okunabilir database modülü.",
     "main": "index.js",
     "directories": {
@@ -29,6 +29,9 @@
     },
     "devDependencies": {
         "@types/lodash": "^4.14.168",
-        "@types/node": "^14.14.34"
+        "@types/node": "^14.14.34",
+        "eslint": "^7.22.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-plugin-import": "^2.22.1"
     }
 }

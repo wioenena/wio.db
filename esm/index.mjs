@@ -16,7 +16,8 @@ import {
     valueArray,
     arrayHasValue,
     includes,
-    startsWith
+    startsWith,
+    DatabaseError
 } from "../index.js";
 
 
@@ -44,5 +45,6 @@ export {
     valueArray,
     arrayHasValue,
     includes,
-    startsWith
+    startsWith,
+    DatabaseError
 };

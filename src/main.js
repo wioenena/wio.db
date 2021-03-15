@@ -207,7 +207,9 @@ class Database {
      */
     static DBCollection = [];
 
+    /** @type {string} @private */
     #databaseName;
+
     /**
      * @param {?string} databaseName
      * @constructor
@@ -220,7 +222,10 @@ class Database {
         databaseName = `${process.cwd()}/${databaseName}`;
         this.#databaseName = databaseName;
         this.#handle();
-        Database.DBCollection.push(this);
+        const repeatingClass = Database.DBCollection.find((db) => {
+            return db.fileName === this.fileName;
+        });
+        if (!repeatingClass) Database.DBCollection.push(this);
     }
 
     /**
@@ -637,6 +642,14 @@ class Database {
     get totalDBSize() {
         return Database.DBCollection.length;
     }
+
+    /**
+     * @returns {string}
+     */
+    get fileName() {
+        const splited = this.#databaseName.split("/");
+        return splited[splited.length - 1];
+    }
 }
 
 
@@ -650,23 +663,4 @@ class Database {
 
 
 
-module.exports = {
-    Database,
-    read,
-    write,
-    isString,
-    isObject,
-    isNumber,
-    isFunction,
-    parseKey,
-    parseValue,
-    setData,
-    unsetData,
-    getData,
-    all,
-    keyArray,
-    valueArray,
-    arrayHasValue,
-    includes,
-    startsWith
-}
+module.exports = Database;
