@@ -1,231 +1,58 @@
-const filePath = `${process.cwd()}/database.json`;
-
-const { readFileSync, writeFileSync, existsSync, unlinkSync } = require("fs");
-
-const { set, unset, get, cloneDeep } = require("lodash");
-
 const DatabaseError = require("./Error");
 
-/**
- * @param {string} fileName
- * @returns {Object}
- */
-const read = (fileName = filePath) => JSON.parse(readFileSync(fileName, "utf-8"));
+const {
+    isString,
+    isObject,
+    isNumber,
+    write,
+    checkFile,
+    parseKey,
+    parseValue,
+    setData,
+    getData,
+    unsetData,
+    read,
+    destroy,
+    all,
+    keyArray,
+    valueArray,
+    arrayHasValue,
+    includes,
+    startsWith
+} = require("./Util");
+
+const yaml = require('yaml');
+
+
+
+
+
 
 /**
- * @param {string} fileName
- * @param {object} data
- * @returns {void}
- */
-const write = (fileName = filePath, data) => writeFileSync(fileName, JSON.stringify(data, null, 4));
-
-/**
- * @param {any} value
- * @returns {boolean}
- */
-const isString = (value) => typeof value !== "string" || value === "" ? false : true;
-
-/**
- * @param {any} value
- * @returns {boolean}
- */
-const isObject = (value) => {
-    if (value.toString() === "[object Object]") return true;
-    if (Array.isArray(value)) return false;
-    if (value.constructor.name !== "object") return false;
-    return true;
-};
-
-/**
- * @param {any} value
- * @returns {boolean}
- */
-const isNumber = (value) => {
-    if (typeof value === "number") return true;
-    return false;
-};
-
-/**
- * @param {any} value
- * @returns {boolean}
- */
-const isFunction = (value) => typeof value === "function";
-
-/**
- * @param {string} key
- * @returns {{key:string,target?:string}}
- */
-const parseKey = (key) => {
-    if (!isString(key)) {
-        throw new DatabaseError(`The key must be string type data.`);
-    }
-    if (key.includes(".")) {
-        const parsedDot = key.split(".");
-        const targetKey = parsedDot.shift();
-        const target = parsedDot.join(".");
-        return { key: targetKey, target };
-    }
-    return { key, target: undefined };
-};
-
-/**
- * @param {any} value
- * @returns {any}
- */
-const parseValue = (value) => {
-    if ((!value || value === "") && !isNumber(value)) throw new DatabaseError(`The value was specified incorrectly.`);
-    return value;
-};
-
-/**
- * @param {string} key
- * @param {any} data
- * @param {any} value
- * @returns {object}
- */
-const setData = (key, data, value) => {
-    const parsed = parseKey(key);
-    if (isObject(data) && parsed.target) {
-        return set(data, parsed.target, value);
-    } else if (parsed.target) {
-        throw new DatabaseError(`${data}'s type is not object.`);
-    }
-    return data;
-}
-
-/**
- * @param {string} key
- * @param {any} data
- * @returns {object}
- */
-const unsetData = (key, data) => {
-    const parsed = parseKey(key);
-    const cloned = cloneDeep(data);
-    if (isObject(data) && parsed.target) {
-        unset(cloned, parsed.target);
-    } else if (parsed.target) {
-        throw new DatabaseError(`${data}'s type is not object.`);
-    }
-    return cloned;
-};
-
-/**
- * @param {string} key
- * @param {any} data
- * @returns {any} 
- */
-const getData = (key, data) => {
-    const parsed = parseKey(key);
-    if (parsed.target) data = get(data, parsed.target);
-    return data;
-};
-
-/**
- * @param {any[]} arrayData
- * @param {number} [limit]
- * @returns {Array<{ID:string,data:any}>}
- */
-const all = (arrayData, limit) => {
-    if (limit) arrayData = arrayData.slice(0, limit);
-    return arrayData.map((item) => ({ ID: item.ID, data: item.data }));
-};
-
-/**
- * @param {any[]} array
- * @returns {string[]}
- */
-const keyArray = (array) => {
-    return array.map((item) => item.ID);
-};
-
-/**
- * @param {any[]} array
- * @returns {any[]}
- */
-const valueArray = (array) => {
-    return array.map((item) => item.data);
-};
-
-/**
- * @param {any} data
- * @param {any} value
- * @returns {boolean | object}
- */
-const arrayHasValue = (data, value) => {
-    if (Array.isArray(value)) {
-        const obj = {};
-        value.forEach((item) => {
-            const check = data.some((i) => i === item);
-            if (check) obj[item] = true;
-            else obj[item] = false;
-        });
-        return obj;
-    }
-    return data.some((item) => item === value);
-};
-
-/**
- * @param {string} key
- * @param {string[]} keyArray
- * @param {object} json
- * @returns {object}
- */
-const includes = (key, keyArray, json) => {
-    keyArray = keyArray.filter((item) => item.includes(key));
-    if (keyArray.length < 1) return {};
-    const obj = {};
-    for (const key of keyArray) {
-        obj[key] = json[key];
-    }
-    return obj;
-};
-
-/**
- * @param {string} key
- * @param {string[]} keyArray
- * @param {object} json
- * @returns {object}
- */
-const startsWith = (key, keyArray, json) => {
-    keyArray = keyArray.filter((item) => item.startsWith(key));
-    if (keyArray.length < 1) return {};
-    const obj = {};
-    for (const key of keyArray) {
-        obj[key] = json[key];
-    }
-    return obj;
-}
-
-/**
- * @type {Database<V>}
+ * @type {YamlDatabase<V>}
  * @template V
  */
-class Database {
+class YamlDatabase {
 
-    /**
-     * @type {Array<Database>}
-     */
+    /** @type {Array<YamlDatabase<unknown>>} */
     static DBCollection = [];
 
     /** @type {string} @private */
-    #databaseName;
+    #databaseName
 
-    /**
-     * @param {?string} databaseName
-     * @constructor
-     */
-    constructor(databaseName = "database.json") {
+    constructor(databaseName = "database.yaml") {
         if (!isString(databaseName)) {
             throw new DatabaseError(`Must be a string type json name.`);
         }
-        databaseName.endsWith(".json") ? void 0 : databaseName = `${databaseName}.json`;
+
+        databaseName.endsWith(".yaml") ? void 0 : databaseName = `${databaseName}.yaml`;
         databaseName = `${process.cwd()}/${databaseName}`;
         this.#databaseName = databaseName;
-        this.#handle();
-        const repeatingClass = Database.DBCollection.find((db) => {
+        checkFile(this.#databaseName);
+        const repeatingClass = YamlDatabase.DBCollection.find((db) => {
             return db.fileName === this.fileName;
         });
-        if (!repeatingClass) Database.DBCollection.push(this);
+        if (!repeatingClass) YamlDatabase.DBCollection.push(this);
     }
 
     /**
@@ -242,11 +69,11 @@ class Database {
             let data = object[parsed.key];
             data = parsed.target ? setData(key, Object.assign({}, data), value) : value;
             object[parsed.key] = data;
-            this.#save(object);
+            write(this.#databaseName, yaml.stringify(object));
             return object[parsed.key];
         } else {
             object[parsed.key] = parsed.target ? setData(key, {}, value) : value;
-            this.#save(object);
+            write(this.#databaseName, yaml.stringify(object));
             return object[parsed.key];
         }
     }
@@ -275,29 +102,17 @@ class Database {
     fetch(key) {
         return this.get(key);
     }
-
-    /**
-     * Veri var mı yok mu kontrol eder.
-     * @param {string} key Key
-     * @returns {boolean}
-     * @example db.exists("test");
-     */
+    
     exists(key) {
         const parsed = parseKey(key);
-        const object = read(this.#databaseName);
+        const object = this.toJSON();
         return object[parsed.key] ? true : false;
     }
-
-    /**
-     * Veri var mı yok mu kontrol eder.
-     * @param {string} key Key
-     * @returns {boolean}
-     * @example db.has("test");
-     */
+    
     has(key) {
         return this.exists(key);
     }
-
+    
     /**
      * Belirtilen miktarda veri döner.
      * @param {number} limit Limit
@@ -306,8 +121,9 @@ class Database {
      */
     all(limit = 0) {
         if (!isNumber(limit) || limit < 1) limit = 0;
-        const object = read(this.#databaseName);
+        const object = yaml.parse(read(this.#databaseName));
         const arr = [];
+        if (object === null) return arr;
         for (const key in object) {
             const obj = {
                 ID: key,
@@ -361,7 +177,8 @@ class Database {
         } else {
             const all = this.toJSON();
             delete all[parsed.key];
-            this.#save(all);
+            
+            Object.keys(all).length === 0 ? write(this.#databaseName, "") : write(this.#databaseName, yaml.stringify(all));
             return;
         }
     }
@@ -372,10 +189,7 @@ class Database {
      * @example db.deleteAll();
      */
     deleteAll() {
-        const all = this.all();
-        all.forEach((item) => {
-            this.delete(item.ID);
-        });
+        write(this.#databaseName, "");
         return;
     }
 
@@ -519,7 +333,8 @@ class Database {
         const result = this.math(key, "-", value, goToNegative);
         return result;
     }
-    
+
+
     /**
      * Array'a veri ekler.
      * @param {string} key Key
@@ -587,7 +402,7 @@ class Database {
      * @returns {void}
      */
     destroy() {
-        unlinkSync(this.#databaseName);
+        destroy(this.#databaseName);
         return;
     }
 
@@ -607,25 +422,6 @@ class Database {
         }
         return deletedSize;
     }
-        
-    /**
-     * @private
-     */
-    #handle() {
-        if (existsSync(this.#databaseName)) {
-            return true;
-        } else {
-            write(this.#databaseName, {});
-        }
-    }
-
-    /**
-     * @private
-     */
-    #save(data) {
-        write(this.#databaseName, data);
-        return true;
-    }
 
     // Getter
 
@@ -640,12 +436,9 @@ class Database {
      * @returns {number}
      */
     get totalDBSize() {
-        return Database.DBCollection.length;
+        return YamlDatabase.DBCollection.length;
     }
 
-    /**
-     * @returns {string}
-     */
     get fileName() {
         const splited = this.#databaseName.split("/");
         return splited[splited.length - 1];
@@ -653,14 +446,4 @@ class Database {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-module.exports = Database;
+module.exports = YamlDatabase;

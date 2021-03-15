@@ -1,13 +1,14 @@
 {
     "name": "wio.db",
-    "version": "4.0.17",
+    "version": "4.0.17-beta.1",
     "description": "Gözle okunabilir database modülü.",
     "main": "index.js",
     "directories": {
         "test": "test"
     },
     "scripts": {
-        "test": "clear && nodemon test/test.js"
+        "test": "clear && nodemon test/test.js",
+        "lint": "eslint src --fix"
     },
     "types": "types/index.d.ts",
     "keywords": [
@@ -16,7 +17,8 @@
         "discord.js",
         "wio.db",
         "turkish",
-        "json"
+        "json",
+        "yaml"
     ],
     "author": "wioenena.q",
     "license": "ISC",
@@ -25,9 +27,14 @@
         "url": "https://github.com/wioenena-q/JS-WioDB"
     },
     "dependencies": {
-        "lodash": "^4.17.21"
+        "lodash": "^4.17.21",
+        "yaml": "^1.10.2"
     },
     "devDependencies": {
+        "@babel/core": "^7.13.10",
+        "@babel/eslint-parser": "^7.13.10",
+        "@babel/plugin-proposal-class-properties": "^7.13.0",
+        "@babel/plugin-proposal-private-methods": "^7.13.0",
         "@types/lodash": "^4.14.168",
         "@types/node": "^14.14.34",
         "eslint": "^7.22.0",

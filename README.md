@@ -8,20 +8,29 @@
 ```npm
 npm install  wio.db
 ```
+# News
+Yaml Support<br>
+    - Json specific features have also been added to yaml
 
 # Uyarı || Warning
 - Node sürümü 14 gereklidir.
 - Node version 14 is required
 
 ## Nasıl Kullanılır? || how to use?
+
 # TypeScript
 ```typescript
 import db from "wio.db"
 ```
 # JS
 ```javascript
-const { Database } = require("wio.db");
-const  db  = new Database("myDatabase");
+const {
+    JsonDatabase,
+    YamlDatabase
+} = require("wio.db");
+
+const  db  = new JsonDatabase("myDatabase");
+const yamldb = new YamlDatabase("myDatabase");
 
 // Data set | get
 db.set("data1", 1);
@@ -83,3 +92,4 @@ db.destroy();
 ```
 ## Bana ulaşabileceğiniz yerler. || Bugs report
 [İnstagram](https://www.instagram.com/wioenena.q/)
+[Discord](https://discord.gg/8N4cq3weqU)

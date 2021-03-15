@@ -20,7 +20,7 @@ class DatabaseError extends Error {
     }
 
     get name() {
-        return yellow(`[ WioDB ] => ${this.constructor.name}`)
+        return yellow(`[ WioDB ] => ${this.constructor.name}`);
     }
 }
 

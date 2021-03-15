@@ -1,10 +1,12 @@
 {
+    "parser": "@babel/eslint-parser",
     "parserOptions": {
         "ecmaVersion": 2017
     },
     "env": {
         "node": true,
-        "es6": true
+        "es6": true,
+        "commonjs": true
     },
     "rules": {
         "semi": [
@@ -18,8 +20,8 @@
         "use-isnan": "error",
         "getter-return": "error",
         "valid-typeof": "error",
-        "default-case": "error",
         "no-extra-bind": "error",
+        "no-eval": "error",
         "no-eq-null": "error",
         "no-labels": "error",
         "no-multi-spaces": "error",
@@ -54,12 +56,12 @@
         "max-len": [
             "error",
             {
-                "code": 500
+                "code": 1000
             }
         ],
         "max-lines": [
             "error",
-            500
+            1000
         ],
         "no-new-object": "error",
         "semi-spacing": "error",

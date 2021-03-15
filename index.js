@@ -1,6 +1,6 @@
-const Database = require("./src/main.js");
+const JsonDatabase = require("./src/JsonProvider");
 const DatabaseError = require("./src/Error");
-
+const YamlDatabase = require("./src/YamlProvider");
 
 
 
@@ -8,6 +8,7 @@ const DatabaseError = require("./src/Error");
 
 
 module.exports = {
-    Database,
+    JsonDatabase,
+    YamlDatabase,
     DatabaseError
 };
