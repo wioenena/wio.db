@@ -1,33 +1,34 @@
 {
-  "name": "wio.db",
-  "version": "4.0.15",
-  "description": "Gözle okunabilir database modülü.",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "clear && nodemon test/test.js"
-  },
-  "types": "types/index.d.ts",
-  "keywords": [
-    "quick.db",
-    "database",
-    "discord.js",
-    "wio.db",
-    "turkish",
-    "json"
-  ],
-  "author": "wioenena.q",
-  "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/wioenena-q/wioenena/tree/wioenena/packages/wiodb"
-  },
-  "dependencies": {
-    "@types/lodash": "^4.14.168",
-    "@types/node": "^14.14.22",
-    "lodash": "^4.17.20",
-    "user": "0.0.0"
-  }
+    "name": "wio.db",
+    "version": "4.0.16",
+    "description": "Gözle okunabilir database modülü.",
+    "main": "index.js",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "test": "clear && nodemon test/test.js"
+    },
+    "types": "types/index.d.ts",
+    "keywords": [
+        "quick.db",
+        "database",
+        "discord.js",
+        "wio.db",
+        "turkish",
+        "json"
+    ],
+    "author": "wioenena.q",
+    "license": "ISC",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/wioenena-q/JS-WioDB"
+    },
+    "dependencies": {
+        "lodash": "^4.17.21"
+    },
+    "devDependencies": {
+        "@types/lodash": "^4.14.168",
+        "@types/node": "^14.14.34"
+    }
 }

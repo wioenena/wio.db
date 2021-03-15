@@ -1,6 +1,6 @@
 const filePath = `${process.cwd()}/database.json`;
 
-const { readFileSync, writeFileSync, existsSync, unlinkSync } = require("fs");
+const { readFileSync, writeFileSync, existssSync, unlinkSync } = require("fs");
 
 const { set, unset, get, cloneDeep } = require("lodash");
 
@@ -199,6 +199,12 @@ const startsWith = (key, keyArray, json) => {
  * @template V
  */
 class Database {
+
+    /**
+     * @type {Array<Database>}
+     */
+    static DBCollection = [];
+
     #databaseName;
     /**
      * @param {?string} databaseName
@@ -212,6 +218,7 @@ class Database {
         databaseName = `${process.cwd()}/${databaseName}`;
         this.#databaseName = databaseName;
         this.#handle();
+        Database.DbCollection.push(this);
     }
 
     /**
@@ -224,7 +231,7 @@ class Database {
         const parsed = parseKey(key);
         value = parseValue(value);
         const object = this.toJSON();
-        if (this.exist(key)) {
+        if (this.exists(key)) {
             let data = object[parsed.key];
             data = parsed.target ? setData(key, Object.assign({}, data), value) : value;
             object[parsed.key] = data;
@@ -266,9 +273,9 @@ class Database {
      * Veri var mı yok mu kontrol eder.
      * @param {string} key Key
      * @returns {boolean}
-     * @example db.exist("test");
+     * @example db.exists("test");
      */
-    exist(key) {
+    exists(key) {
         const parsed = parseKey(key);
         const object = read(this.#databaseName);
         return object[parsed.key] ? true : false;
@@ -281,7 +288,7 @@ class Database {
      * @example db.has("test");
      */
     has(key) {
-        return this.exist(key);
+        return this.exists(key);
     }
 
     /**
@@ -562,12 +569,29 @@ class Database {
         unlinkSync(this.#databaseName);
         return;
     }
+
+    /**
+     * Çagrılan fonksiyon true değer dönerse onunla bağlantılı olan verileri siler.
+     * @param {(key:string,value:V) => boolean} callbackfn
+     * @returns {number}
+     */
+    findAndDelete(callbackfn) {
+        let deletedSize = 0;
+        const all = this.all();
+        for (const item of all) {
+            if (callbackfn(item.ID, item.data)) {
+                this.delete(item.ID);
+                deletedSize++;
+            }
+        }
+        return deletedSize;
+    }
         
     /**
      * @private
      */
     #handle() {
-        if (existsSync(this.#databaseName)) {
+        if (existssSync(this.#databaseName)) {
             return true;
         } else {
             write(this.#databaseName, {});
@@ -580,6 +604,22 @@ class Database {
     #save(data) {
         write(this.#databaseName, data);
         return true;
+    }
+
+    // Getter
+
+    /**
+     * @returns {number}
+     */
+    get size() {
+        return this.all().length;
+    }
+
+    /**
+     * @returns {number}
+     */
+    get totalDBSize() {
+        return Database.DbCollection.length;
     }
 }
 

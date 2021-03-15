@@ -22,27 +22,63 @@ import db from "wio.db"
 ```javascript
 const { Database } = require("wio.db");
 const  db  = new Database("myDatabase");
-db.set("test",1);
-db.get("test");
-db.fetch("test");
-db.exist("test");
-db.has("test");
-db.all(5);
-db.fetchAll();
-db.toJSON();
-db.delete("test");
+
+// Data set | get
+db.set("data1", 1);
+db.get("data1");
+db.fetch("data1");
+
+// Data exists
+
+db.has("data1");
+db.exists("data2");
+
+// Get all data
+
+db.all(5); || db.all();
+db.fetchAll(5); || db.fetchAll();
+
+// To JSON
+
+db.toJson(5); || db.toJson();
+
+// Delete data
+
+db.delete("key");
 db.deleteAll();
-db.type("test");
-db.pull("test",3);
+
+// Get data type
+
+db.type("data1"); // ---> number
+
+// DB Array methods
+db.push("array1", 10);
+db.pull("array1", 10);
+db.arrayHasValue("array1", 10);
 db.valueArray();
 db.keyArray();
-db.math("test","*",5);
-db.add("test",5);
-db.substr("test",5);
-db.push("test","arrayPush");
-db.arrayHasValue("test",["arrayPush","test2"] || "test2");
-db.includes("tes");
-db.startsWith("te");
+
+// DB Math metods
+
+db.math("data1","*", 3);
+db.add("data1", 10);
+db.substr("data1", 5);
+
+// DB Finding methods
+
+db.included("da");
+db.startsWith("da");
+db.findAndDelete((key,value) => {
+    return key.includes("data");
+});
+
+// Infos
+console.log(db.size);
+console.log(db.totalDBSize);
+console.log(Database.DBCollection);
+
+
+// Destroy DB
 db.destroy();
 ```
 ## Bana ulaşabileceğiniz yerler. || Bugs report

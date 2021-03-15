@@ -18,7 +18,7 @@ declare module "wio.db" {
         public set(key: string, value: V): V;
         public get(key: string): V;
         public fetch(key: string): V;
-        public exist(key: string): boolean;
+        public exists(key: string): boolean;
         public has(key: string): boolean;
         public all(limit?: number): Array<{ ID: string, data: V }>;
         public fetchAll(limit?: number): Array<{ ID: string, data: V }>;
@@ -36,8 +36,13 @@ declare module "wio.db" {
         public arrayHasValue<T>(key: string, value: T | T[]): boolean | object;
         public includes(key: string): object;
         public startsWith(key: string): object;
+        public findAndDelete(callbackfn: (key: string, value: V) => boolean): number;
         public destroy(): void;
-    };
+        public get size(): number;
+        public get totalDBSize(): number;
+        public static DBCollection: Array<Database>;
+    }
+    
     export function read(fileName: string): object;
     export function write(fileName: string, data: object): void;
     export function isString(value: any): boolean;
