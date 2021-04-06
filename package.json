@@ -1,6 +1,6 @@
 {
     "name": "wio.db",
-    "version": "4.0.17-beta.2",
+    "version": "4.0.18",
     "description": "Gözle okunabilir database modülü.",
     "main": "index.js",
     "directories": {
@@ -21,7 +21,7 @@
         "yaml"
     ],
     "author": "wioenena.q",
-    "license": "ISC",
+    "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/wioenena-q/JS-WioDB"
