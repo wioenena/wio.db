@@ -478,15 +478,19 @@ class JsonDatabase {
 
     /**
      * @param {(value:Schema<V>,index:number,array:Array<Schema<V>>) => boolean} callbackfn
+     * @param {any} [thisArg]
      */
-    filter(callbackfn) {
+    filter(callbackfn, thisArg) {
+        if (thisArg) callbackfn = callbackfn.bind(thisArg);
         return this.all().filter(callbackfn);
     }
 
     /**
      * @param {(a:Schema<V>,b:Schema<V>) => number} callbackfn
+     * @param {any} [thisArg]
      */
-    sort(callbackfn) {
+    sort(callbackfn, thisArg) {
+        if (thisArg) callbackfn = callbackfn.bind(thisArg);
         return this.all().sort(callbackfn);
     }
 
@@ -501,10 +505,12 @@ class JsonDatabase {
     /**
      * Çagrılan fonksiyon true değer dönerse onunla bağlantılı olan verileri siler.
      * @param {(element:{ID:string,data:V},provider:this) => boolean} callbackfn
+     * @param {any} [thisArg]
      * @returns {number}
      */
-    findAndDelete(callbackfn) {
+    findAndDelete(callbackfn, thisArg) {
         let deletedSize = 0;
+        if (thisArg) callbackfn = callbackfn.bind(thisArg);
         const all = this.all();
         for (const element of all) {
             if (callbackfn(element, this)) {
