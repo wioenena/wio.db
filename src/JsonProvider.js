@@ -1,11 +1,8 @@
 const DatabaseError = require("./Error");
 
 const {
-    isString,
-    isObject,
     isNumber,
     write,
-    checkFile,
     parseKey,
     parseValue,
     setData,
@@ -20,8 +17,14 @@ const {
     includes,
     startsWith
 } = require("./Util");
-
-
+const path = require('path');
+const {
+    existsSync,
+    mkdirSync,
+    writeFileSync,
+    readFileSync
+} = require("fs");
+const { set, get } = require("lodash");
 
 
 
@@ -39,77 +42,154 @@ const {
 class JsonDatabase {
 
     /**
-     * @type {Array<JsonDatabase<unknown>>}
+     * @private
+     * @type {object}
      */
-    static DBCollection = [];
-
-    /** @type {string} @private */
-    #databaseName;
-
+    #cache = {};
+    
     /**
-     * @param {?string} databaseName
+     * @param {import("./Types/IOptions").IOptions} options
      * @constructor
      */
-    constructor(databaseName = "database.json") {
-        if (!isString(databaseName)) {
-            throw new DatabaseError(`Must be a string type json name.`);
+    constructor({
+        databaseName = "db.json",
+        maxData = null
+    } = {}) {
+
+        if (maxData !== null && typeof maxData !== "number") {
+            throw new DatabaseError("The maximum limit must be in number type!");
+        } else {
+            if (maxData < 1) {
+                throw new DatabaseError("Inappropriate range for the limit!");
+            }
         }
-        databaseName.endsWith(".json") ? void 0 : databaseName = `${databaseName}.json`;
-        databaseName = `${process.cwd()}/${databaseName}`;
-        this.#databaseName = databaseName;
-        checkFile(this.#databaseName, "{}");
-        const repeatingClass = JsonDatabase.DBCollection.find((db) => {
-            return db.fileName === this.fileName;
-        });
-        if (!repeatingClass) JsonDatabase.DBCollection.push(this);
+
+        
+        let basePath = process.cwd();
+
+        if (databaseName.startsWith(basePath)) {
+            databaseName = databaseName.replace(basePath, "");
+        }
+
+        if (databaseName.startsWith("./")) {
+            databaseName = databaseName.slice(1);
+        }
+
+        if (!databaseName.startsWith(path.sep)) {
+            databaseName = path.sep + databaseName;
+        }
+
+        
+        if (!databaseName.endsWith(".json")) {
+            databaseName += "db.json";
+        }
+
+        basePath = `${basePath}${databaseName}`;
+
+        const dirNames = databaseName.split(path.sep).slice(1);
+        
+        const length = dirNames.length;
+
+        if (length > 1) {
+            dirNames.pop();
+
+            const firstResolvedDir = path.resolve(dirNames[0]);
+
+            if (!existsSync(firstResolvedDir)) {
+                mkdirSync(firstResolvedDir);
+            }
+
+            dirNames.splice(0, 1);
+
+            let targetDirPath = firstResolvedDir;
+
+            for (const dirName of dirNames) {
+                const currentPath = `${targetDirPath}/${dirName}`
+                
+                if (!existsSync(currentPath)) {
+                    mkdirSync(currentPath);
+                }
+
+                targetDirPath = `${targetDirPath}/${dirName}`;
+            }
+        }
+
+        this.path = basePath;
+
+        if (!existsSync(this.path)) {
+            writeFileSync(this.path, "{}");
+        } else {
+            this.#cache = JSON.parse(readFileSync(this.path, "utf-8"));
+        }
+        
+        /**
+         * @type {number}
+         */
+        this.maxData = maxData;
+
+        this.size = 0;
     }
 
     /**
      * Veri kaydedersiniz.
      * @param {string} key Key
      * @param {V} value Value
+     * @param {boolean} [autoWrite=true]
      * @example db.set("test",3);
      */
-    set(key, value) {
-        const parsed = parseKey(key);
-        value = parseValue(value);
-        const object = this.toJSON();
-        if (this.exists(key)) {
-            let data = object[parsed.key];
-            data = parsed.target ? setData(key, Object.assign({}, data), value) : value;
-            object[parsed.key] = data;
-            write(this.#databaseName, JSON.stringify(object, null, 4));
-            return object[parsed.key];
-        } else {
-            object[parsed.key] = parsed.target ? setData(key, {}, value) : value;
-            write(this.#databaseName, JSON.stringify(object, null, 4));
-            return object[parsed.key];
+    set(key, value, autoWrite=true) {
+
+        if (key === "" || typeof key !== "string") {
+            throw new DatabaseError("Unapproved key!");
         }
+
+        if (
+            // @ts-ignore
+            value === "" ||
+            value === undefined ||
+            value === null
+        ) {
+            throw new DatabaseError("Unapproved value!");
+        }
+
+        if (typeof autoWrite !== "boolean") {
+            throw new DatabaseError("AutoWrite value must be true or false!");
+        }
+
+        if (typeof this.maxData === "number" && this.size >= this.maxData) {
+            throw new DatabaseError("Data limit exceeded!");
+        }
+
+        set(this.#cache, key, value);
+
+        if (autoWrite)
+            writeFileSync(this.path, JSON.stringify(this.#cache, null, 4));
+
+        this.size++;
+
+        return value;
     }
 
     /**
      * Veri çekersiniz.
      * @param {string} key Key
+     * @param {V} [defaultValue=null] If there is no value, the default value to return.
      * @returns {V}
      * @example db.get("test");
      */
-    get(key) {
-        const parsed = parseKey(key);
-        const object = this.toJSON();
-        let data = object[parsed.key];
-        if (!data) return null;
-        if (parsed.target) data = getData(key, Object.assign({}, data));
-        return data;
+    get(key, defaultValue = null) {
+        return get(this.#cache, key) || defaultValue;
     }
     
     /**
      * Veri çekersiniz.
      * @param {string} key Key
+     * @param {V} [defaultValue=null] If there is no value, the default value to return.
      * @returns {V}
      * @example db.get("test");
      */
-    fetch(key) {
-        return this.get(key);
+    fetch(key,defaultValue) {
+        return this.get(key, defaultValue);
     }
 
     /**
@@ -119,9 +199,8 @@ class JsonDatabase {
      * @example db.exists("test");
      */
     exists(key) {
-        const parsed = parseKey(key);
-        const object = this.toJSON();
-        return object[parsed.key] ? true : false;
+        const data = this.get(key);
+        return data !== undefined && data !== null;
     }
 
     /**
@@ -142,7 +221,7 @@ class JsonDatabase {
      */
     all(limit = 0) {
         if (!isNumber(limit) || limit < 1) limit = 0;
-        const object = JSON.parse(read(this.#databaseName));
+        const object = JSON.parse(read(this.path));
         const arr = [];
         for (const key in object) {
             const obj = {
@@ -191,13 +270,14 @@ class JsonDatabase {
             throw new DatabaseError(`${parsed.key} There is no data with ID, I cannot delete it.`);
         }
         const data = this.get(parsed.key);
+        this.size--;
         if (parsed.target) {
             const _unsetData = unsetData(key, data);
             return this.set(parsed.key, _unsetData);
         } else {
             const all = this.toJSON();
             delete all[parsed.key];
-            write(this.#databaseName, JSON.stringify(all, null, 4));
+            write(this.path, JSON.stringify(all, null, 4));
             return;
         }
     }
@@ -208,7 +288,8 @@ class JsonDatabase {
      * @example db.deleteAll();
      */
     deleteAll() {
-        write(this.#databaseName, "{}");
+        write(this.path, "{}");
+        this.size = 0;
         return;
     }
 
@@ -227,11 +308,10 @@ class JsonDatabase {
      * Array'den veri siler.
      * @param {string} key Key
      * @param {V | V[]} value Value
-     * @param {boolean} [multiple] Multiple
      * @returns {any}
      * @example db.pull("test","hello");
      */
-    pull(key, value, multiple = true) {
+    pull(key, value) {
         value = parseValue(value);
         /** @type {V[] | V} */
         let data = this.get(key);
@@ -420,8 +500,7 @@ class JsonDatabase {
      * @returns {void}
      */
     destroy() {
-        destroy(this.#databaseName);
-        return;
+        return destroy(this.path);
     }
 
     /**
@@ -441,27 +520,11 @@ class JsonDatabase {
         return deletedSize;
     }
 
-    // Getter
-
-    /**
-     * @returns {number}
-     */
-    get size() {
-        return this.all().length;
-    }
-
-    /**
-     * @returns {number}
-     */
-    get totalDBSize() {
-        return JsonDatabase.DBCollection.length;
-    }
-
     /**
      * @returns {string}
      */
     get fileName() {
-        const splited = this.#databaseName.split("/");
+        const splited = this.path.split("/");
         return splited[splited.length - 1];
     }
 }

@@ -1,5 +1,4 @@
 const {
-    existsSync,
     writeFileSync,
     unlinkSync,
     readFileSync
@@ -30,14 +29,6 @@ const write = (fileName, data) => {
     return;
 };
 
-const checkFile = (fileName, data = "") => {
-    const { existsSync } = require('fs');
-    if (existsSync(fileName)) {
-        return true;
-    } else {
-        write(fileName, data);
-    }
-};
 
 /**
  * @param {string} key
@@ -203,7 +194,6 @@ module.exports = {
     isNumber,
     isFunction,
     write,
-    checkFile,
     parseKey,
     parseValue,
     setData,

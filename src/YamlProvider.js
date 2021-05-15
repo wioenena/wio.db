@@ -2,7 +2,6 @@ const DatabaseError = require("./Error");
 
 const {
     isString,
-    isObject,
     isNumber,
     write,
     checkFile,
@@ -208,11 +207,10 @@ class YamlDatabase {
      * Array'den veri siler.
      * @param {string} key Key
      * @param {V | V[]} value Value
-     * @param {boolean} [multiple] Multiple
      * @returns {any}
      * @example db.pull("test","hello");
      */
-    pull(key, value, multiple = true) {
+    pull(key, value) {
         value = parseValue(value);
         /** @type {V[] | V} */
         let data = this.get(key);

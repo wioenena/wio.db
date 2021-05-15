@@ -4,7 +4,7 @@ const red = (message) => `\x1b[31m${message}\x1b[0m`;
 
 const yellow = (message) => `\x1b[33m${message}\x1b[0m`;
 
-const advertisement = `\n${yellow("[ WioDB ] => Information:")} ${green("Come here for help => https://discord.gg/8N4cq3weqU")}`;
+const advertisement = `${yellow("[ WioDB ] => Information:")} ${green("Come here for help => https://discord.gg/BwyEkW4Qax")}`;
 
 
 
@@ -16,7 +16,7 @@ const advertisement = `\n${yellow("[ WioDB ] => Information:")} ${green("Come he
 
 class DatabaseError extends Error {
     constructor(message) {
-        super(`${red(message)}${advertisement}`);
+        super(`${red(message)}\n${advertisement}`);
     }
 
     get name() {

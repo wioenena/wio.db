@@ -1,7 +1,6 @@
 ![Image](https://img.shields.io/npm/v/wio.db?color=%2351F9C0&label=Wio.db) 
 ![Image](https://img.shields.io/npm/dt/wio.db.svg?color=%2351FC0&maxAge=3600) 
 #
-![Image](https://nodei.co/npm/wio.db.png?downloads=true&downloadRank=true&stars=true)
 <br>
 
 ## Yüklemek İçin
@@ -13,15 +12,11 @@ Yaml Support<br>
     - Json specific features have also been added to yaml
 
 # Uyarı || Warning
-- Node sürümü 14 gereklidir.
-- Node version 14 is required
+- Node sürümü 12'den büyük olması gerekli gereklidir.
+- Node version must be greater than 12
 
 ## Nasıl Kullanılır? || how to use?
 
-# TypeScript
-```typescript
-import db from "wio.db"
-```
 # JS
 ```javascript
 const {
@@ -29,7 +24,7 @@ const {
     YamlDatabase
 } = require("wio.db");
 
-const  db  = new JsonDatabase("myDatabase");
+const db = new JsonDatabase("myDatabase");
 const yamldb = new YamlDatabase("myDatabase");
 
 // Data set | get
@@ -92,4 +87,4 @@ db.destroy();
 ```
 ## Bana ulaşabileceğiniz yerler. || Bugs report
 [İnstagram](https://www.instagram.com/wioenena.q/)
-[Discord](https://discord.gg/8N4cq3weqU)
+[Discord](https://discord.gg/BwyEkW4Qax)

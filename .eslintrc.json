@@ -69,6 +69,7 @@
         "arrow-parens": "error",
         "constructor-super": "error",
         "no-duplicate-imports": "error",
-        "no-var": "error"
+        "no-var": "error",
+        "no-unused-vars": "warn"
     }
 }

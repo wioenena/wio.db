@@ -1,13 +1,13 @@
 {
     "name": "wio.db",
-    "version": "4.0.18",
+    "version": "4.0.20",
     "description": "Gözle okunabilir database modülü.",
     "main": "index.js",
     "directories": {
         "test": "test"
     },
     "scripts": {
-        "test": "clear && nodemon test/test.js",
+        "test": "mocha ",
         "lint": "eslint src --fix"
     },
     "types": "types/index.d.ts",
@@ -36,6 +36,7 @@
         "@babel/plugin-proposal-class-properties": "^7.13.0",
         "@babel/plugin-proposal-private-methods": "^7.13.0",
         "@types/lodash": "^4.14.168",
+        "@types/mocha": "^8.2.2",
         "@types/node": "^14.14.34",
         "eslint": "^7.22.0",
         "eslint-config-airbnb-base": "^14.2.1",
