@@ -1,4 +1,4 @@
-const { JsonDatabase } = require("../index");
+const { YamlDatabase } = require("../index");
 
 
 
@@ -7,12 +7,12 @@ const { JsonDatabase } = require("../index");
 
 
 
-describe("Json class all controls", () => {
+describe("Yaml class all controls", () => {
     it("databaseName with process.cwd()", () => {
         console.log(
-            new JsonDatabase(
+            new YamlDatabase(
                 {
-                    databaseName: `${process.cwd()}/databases/example1/example1.json`
+                    databaseName: `${process.cwd()}/databases/example1/example1.yml`
                 }
             ).path
         );
@@ -20,9 +20,9 @@ describe("Json class all controls", () => {
 
     it("databaseName with './'", () => {
         console.log(
-            new JsonDatabase(
+            new YamlDatabase(
                 {
-                    databaseName: "./databases/example2/example2.json"
+                    databaseName: "./databases/example2/example2.yml"
                 }
             ).path
         );
@@ -30,9 +30,9 @@ describe("Json class all controls", () => {
 
     it("databaseName with /", () => {
         console.log(
-            new JsonDatabase(
+            new YamlDatabase(
                 {
-                    databaseName: "/databases/example3/example3.json"
+                    databaseName: "/databases/example3/example3.yml"
                 }
             ).path
         );
@@ -40,7 +40,7 @@ describe("Json class all controls", () => {
 
     it("Max limit with non-number", () => {
         console.log(
-            new JsonDatabase(
+            new YamlDatabase(
                 {
                     maxData: "3" // -> Error
                 }
@@ -50,7 +50,7 @@ describe("Json class all controls", () => {
 
     it("Max limit with negative number", () => {
         console.log(
-            new JsonDatabase(
+            new YamlDatabase(
                 {
                     maxData: -1 // -> Error
                 }
@@ -58,9 +58,9 @@ describe("Json class all controls", () => {
         );
     });
 
-    const db = new JsonDatabase(
+    const db = new YamlDatabase(
         {
-            databaseName: "/databases/example3/example3.json",
+            databaseName: "/databases/example3/example3.yml",
             maxData: 100
         }
     );

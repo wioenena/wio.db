@@ -1,30 +1,13 @@
 const DatabaseError = require("./Error");
-
-const {
-    isNumber,
-    write,
-    parseKey,
-    parseValue,
-    setData,
-    getData,
-    unsetData,
-    read,
-    destroy,
-    all,
-    keyArray,
-    valueArray,
-    arrayHasValue,
-    includes,
-    startsWith
-} = require("./Util");
 const path = require('path');
 const {
     existsSync,
     mkdirSync,
     writeFileSync,
-    readFileSync
+    readFileSync,
+    unlinkSync
 } = require("fs");
-const { set, get } = require("lodash");
+const { set, get, unset } = require("lodash");
 
 
 
@@ -58,11 +41,12 @@ class JsonDatabase {
 
         if (maxData !== null && typeof maxData !== "number") {
             throw new DatabaseError("The maximum limit must be in number type!");
-        } else {
-            if (maxData < 1) {
-                throw new DatabaseError("Inappropriate range for the limit!");
-            }
         }
+        
+        if (maxData !== null && maxData < 1) {
+            throw new DatabaseError("Inappropriate range for the limit!");
+        }
+        
 
         
         let basePath = process.cwd();
@@ -104,7 +88,7 @@ class JsonDatabase {
             let targetDirPath = firstResolvedDir;
 
             for (const dirName of dirNames) {
-                const currentPath = `${targetDirPath}/${dirName}`
+                const currentPath = `${targetDirPath}/${dirName}`;
                 
                 if (!existsSync(currentPath)) {
                     mkdirSync(currentPath);
@@ -134,7 +118,7 @@ class JsonDatabase {
      * Veri kaydedersiniz.
      * @param {string} key Key
      * @param {V} value Value
-     * @param {boolean} [autoWrite=true]
+     * @param {boolean} [autoWrite=true] Automatic write setting.
      * @example db.set("test",3);
      */
     set(key, value, autoWrite=true) {
@@ -153,7 +137,7 @@ class JsonDatabase {
         }
 
         if (typeof autoWrite !== "boolean") {
-            throw new DatabaseError("AutoWrite value must be true or false!");
+            throw new DatabaseError("autoWrite parameter must be true or false!");
         }
 
         if (typeof this.maxData === "number" && this.size >= this.maxData) {
@@ -178,7 +162,8 @@ class JsonDatabase {
      * @example db.get("test");
      */
     get(key, defaultValue = null) {
-        return get(this.#cache, key) || defaultValue;
+        const data = get(this.#cache, key);
+        return data === undefined ? defaultValue : data;    
     }
     
     /**
@@ -188,7 +173,7 @@ class JsonDatabase {
      * @returns {V}
      * @example db.get("test");
      */
-    fetch(key,defaultValue) {
+    fetch(key, defaultValue) {
         return this.get(key, defaultValue);
     }
 
@@ -216,27 +201,29 @@ class JsonDatabase {
     /**
      * Belirtilen miktarda veri döner.
      * @param {number} limit Limit
-     * @returns {Array<{ID:string,data:V}>}
+     * @returns {Array<Schema<V>>}>}
      * @example db.all(5);
      */
     all(limit = 0) {
-        if (!isNumber(limit) || limit < 1) limit = 0;
-        const object = JSON.parse(read(this.path));
-        const arr = [];
-        for (const key in object) {
-            const obj = {
-                ID: key,
-                data: object[key]
-            };
-            arr.push(obj);
+        if(typeof limit !== "number") {
+            throw new DatabaseError("Must be of limit number type!");
         }
-        return all(arr, limit);
+        
+        const arr = [];
+        for (const key in this.#cache) {
+            arr.push({
+                ID: key,
+                data: this.#cache[key]
+            });
+        }
+
+        return limit > 0 ? arr.splice(0, limit) : arr;
     }
 
     /**
      * Belirtilen miktarda veri döner.
      * @param {number} [limit] Limit
-     * @returns {Array<{ID:string,data:V}>}
+     * @returns {Array<Schema<V>>}
      * @example db.fetchAll(5);
      */
     fetchAll(limit) {
@@ -246,40 +233,44 @@ class JsonDatabase {
     /**
      * Belirtilen miktarda Object tipinde verileri döner.
      * @param {number} [limit] Limit
-     * @returns {Object}
+     * @returns {{[key:string]:V}}
      * @example db.toJSON();
      */
     toJSON(limit) {
         const allData = this.all(limit);
+        /**
+         * @type {{[key:string]:V}}
+         */
         const json = {};
-        allData.forEach((item) => {
-            json[item.ID] = item.data;
-        });
+        for (const element of allData) {
+            json[element.ID] = element.data;
+        }
         return json;
     }
 
     /**
      * Veri siler.
      * @param {string} key Key
+     * @param {boolean} autoWrite Automatic write setting.
      * @returns {void}
      * @example db.delete("test");
      */
-    delete(key) {
-        const parsed = parseKey(key);
-        if (!this.has(parsed.key)) {
-            throw new DatabaseError(`${parsed.key} There is no data with ID, I cannot delete it.`);
+    delete(key, autoWrite = true) {
+
+        if (key === "" || typeof key !== "string") {
+            throw new DatabaseError("Unapproved key!");
         }
-        const data = this.get(parsed.key);
+
+        if (typeof autoWrite !== "boolean") {
+            throw new DatabaseError("autoWrite parameter must be true or false!");
+        }
+
         this.size--;
-        if (parsed.target) {
-            const _unsetData = unsetData(key, data);
-            return this.set(parsed.key, _unsetData);
-        } else {
-            const all = this.toJSON();
-            delete all[parsed.key];
-            write(this.path, JSON.stringify(all, null, 4));
-            return;
-        }
+        unset(this.#cache, key);
+
+        if (autoWrite)
+            writeFileSync(this.path, JSON.stringify(this.#cache, null, 4));
+        return;
     }
 
     /**
@@ -288,8 +279,9 @@ class JsonDatabase {
      * @example db.deleteAll();
      */
     deleteAll() {
-        write(this.path, "{}");
+        writeFileSync(this.path, "{}");
         this.size = 0;
+        this.#cache = {};
         return;
     }
 
@@ -307,29 +299,40 @@ class JsonDatabase {
     /**
      * Array'den veri siler.
      * @param {string} key Key
-     * @param {V | V[]} value Value
+     * @param {boolean} multiple Whether to target multiple targets.
+     * @param {(element,index,array) => boolean} callbackfn Value
+     * @param {any} [thisArg]
      * @returns {any}
      * @example db.pull("test","hello");
      */
-    pull(key, value) {
-        value = parseValue(value);
-        /** @type {V[] | V} */
+    pull(key, callbackfn, multiple = false, thisArg) {
         let data = this.get(key);
         if (!data) return false;
         if (!Array.isArray(data)) throw new DatabaseError(`${key} It is not a data string with an ID.`);
-        if (Array.isArray(value)) {
-            // @ts-ignore
-            data = data.filter((item) => !value.includes(item));
-            // @ts-ignore
-            return this.set(key, data);
-        } else {
-            const hasItem = data.some((item) => item === value);
-            if (!hasItem) return false;
-            const index = data.findIndex((item) => item === value);
-            data = data.filter((item, i) => i !== index);
-            // @ts-ignore
-            return this.set(key, data);
+        if (typeof multiple !== "boolean") {
+            throw new DatabaseError("multiple parameter must be true or false!");
         }
+        if (thisArg)
+            callbackfn = callbackfn.bind(thisArg);
+
+        const length = data.length;
+
+        if (multiple) {
+            const newArray = [];
+            
+            for (let i = 0; i < length; i++) {
+                if (!callbackfn(data[i], i, data)) {
+                    newArray.push(data[i]);
+                }
+            }
+            // @ts-ignore
+            return this.set(key, newArray);
+        } else {
+            const index = data.findIndex(callbackfn);
+            data.splice(index, 1);
+        }
+        
+        return this.set(key, data);
     }
 
     /**
@@ -339,7 +342,7 @@ class JsonDatabase {
      */
     valueArray() {
         const all = this.all();
-        return valueArray(all);
+        return all.map((element) => element.data);
     }
 
     /**
@@ -349,63 +352,63 @@ class JsonDatabase {
      */
     keyArray() {
         const all = this.all();
-        return keyArray(all);
+        return all.map((element) => element.ID);
     }
     
     /**
      * Matematik işlemleri yapar.
      * @param {string} key Key
      * @param {"+" | "-" | "*" | "/" | "%"} operator Operator
-     * @param {number} value Value
+     * @param {number|string} value Value
      * @param {boolean} [goToNegative] Verinin -'lere düşüp düşmeyeceği. (default false)
      * @returns {any}
      * @example db.math("test","/",5,false);
      */
     math(key, operator, value, goToNegative = false) {
-        if (!isNumber(value)) throw new DatabaseError(`The type of value is not a number.`);
+        
+        // @ts-ignore
+        if (Array.isArray(value) || isNaN(value)) {
+            throw new DatabaseError(`The type of value is not a number.`);
+        }
+        
         if (value <= 0) throw new DatabaseError(`Value cannot be less than 1.`);
         value = Number(value);
-        if (!(typeof goToNegative === "boolean")) throw new DatabaseError(`The goToNegative parameter must be of boolean type.`);
+        if (typeof goToNegative !== "boolean") throw new DatabaseError(`The goToNegative parameter must be of boolean type.`);
         let data = this.get(key);
-        if (!data && !isNumber(data)) {
+        if (!data) {
             // @ts-ignore
             return this.set(key, value);
         }
-        if (!isNumber(data)) throw new DatabaseError(`${key} ID data is not a number type data.`);
+        // @ts-ignore
+        if (Array.isArray(data) || isNaN(data)) throw new DatabaseError(`${key} ID data is not a number type data.`);
+
         // @ts-ignore
         data = Number(data);
         switch (operator) {
             case "+":
                 // @ts-ignore
                 data += value;
-                return this.set(key, data);
                 break;
             case "-":
                 // @ts-ignore
                 data -= value;
                 // @ts-ignore
                 if (goToNegative === false && data < 1) data = 0;
-                return this.set(key, data);
                 break;
             case "*":
                 // @ts-ignore
                 data *= value;
-                return this.set(key, data);
                 break;
             case "/":
                 // @ts-ignore
                 data /= value;
-                return this.set(key, data);
                 break;
             case "%":
                 // @ts-ignore
                 data %= value;
-                return this.set(key, data);
-                break;
-            default:
-                return undefined;
                 break;
         }
+        return this.set(key, data);
     }
 
     /**
@@ -416,8 +419,7 @@ class JsonDatabase {
      * @example db.add("test",5,false);
      */
     add(key, value) {
-        const result = this.math(key, "+", value);
-        return result;
+        return this.math(key, "+", value);
     }
 
     /**
@@ -429,15 +431,13 @@ class JsonDatabase {
      * @example db.substr("test",2,false);
      */
     substr(key, value, goToNegative) {
-        const result = this.math(key, "-", value, goToNegative);
-        return result;
+        return this.math(key, "-", value, goToNegative);
     }
     
     /**
      * Array'a veri ekler.
      * @param {string} key Key
-     * @param {T} value Value
-     * @template T
+     * @param {any} value Value
      * @returns {V}
      * @example db.push("test","succes");
      */
@@ -457,42 +457,37 @@ class JsonDatabase {
     }
 
     /**
-     * Array'da value varmı yokmu kontrol eder.
-     * @param {string} key Key
-     * @param {T | T[]} value Value
-     * @template T
-     * @return {any}
-     * @example db.arrayHasValue("test",["succes","hello"]);
-     */
-    arrayHasValue(key, value) {
-        const data = this.get(key);
-        if (!data) throw new DatabaseError(`No data with ${key} ID in DataBase.`);
-        if (!Array.isArray(data)) throw new DatabaseError(`The data named ${key} in the DataBase is not of type array.`);
-        return arrayHasValue(data, value);
-    }
-
-    /**
      * Database'de ID'lerin içinde belirtilen veri varsa o verileri getirir.
      * @param {string} key Key
-     * @returns {Object}
+     * @returns {Array<Schema<V>>}
      * @example db.includes("te");
      */
     includes(key) {
-        const keyArray = this.keyArray();
-        const json = this.toJSON();
-        return includes(key, keyArray, json);
+        return this.filter((element) => element.ID.includes(key));
     }
 
     /**
      * Database'de ID'leri belirtilen veri ile başlayan verileri getirir.
      * @param {string} key Key
-     * @returns {Object}
+     * @returns {Array<Schema<V>>}
      * @example db.startsWith("te");
      */
     startsWith(key) {
-        const keyArray = this.keyArray();
-        const json = this.toJSON();
-        return startsWith(key, keyArray, json);
+        return this.filter((element) => element.ID.startsWith(key));
+    }
+
+    /**
+     * @param {(value:Schema<V>,index:number,array:Array<Schema<V>>) => boolean} callbackfn
+     */
+    filter(callbackfn) {
+        return this.all().filter(callbackfn);
+    }
+
+    /**
+     * @param {(a:Schema<V>,b:Schema<V>) => number} callbackfn
+     */
+    sort(callbackfn) {
+        return this.all().sort(callbackfn);
     }
 
     /**
@@ -500,32 +495,24 @@ class JsonDatabase {
      * @returns {void}
      */
     destroy() {
-        return destroy(this.path);
+        return unlinkSync(this.path);
     }
 
     /**
      * Çagrılan fonksiyon true değer dönerse onunla bağlantılı olan verileri siler.
-     * @param {(key:string,value:V) => boolean} callbackfn
+     * @param {(element:{ID:string,data:V},provider:this) => boolean} callbackfn
      * @returns {number}
      */
     findAndDelete(callbackfn) {
         let deletedSize = 0;
         const all = this.all();
-        for (const item of all) {
-            if (callbackfn(item.ID, item.data)) {
-                this.delete(item.ID);
+        for (const element of all) {
+            if (callbackfn(element, this)) {
+                this.delete(element.ID);
                 deletedSize++;
             }
         }
         return deletedSize;
-    }
-
-    /**
-     * @returns {string}
-     */
-    get fileName() {
-        const splited = this.path.split("/");
-        return splited[splited.length - 1];
     }
 }
 
@@ -541,3 +528,13 @@ class JsonDatabase {
 
 
 module.exports = JsonDatabase;
+
+
+
+
+/**
+ * @template T
+ * @typedef {Object} Schema
+ * @prop {string} ID
+ * @prop {T} data
+ */
