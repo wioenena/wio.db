@@ -23,6 +23,11 @@ npm install  wio.db
 - Updated
   - \<db\>.findAndDelete method.
 
+Some bug fixed and performance improved.
+
+# Speed test
+<img src="https://resimyukle.imageupload.workers.dev/uIXcf0NE_IMG_20210516_024122.jpg"></img>
+
 ## Nasıl Kullanılır? || how to use?
 
 # JS
