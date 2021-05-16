@@ -14,9 +14,13 @@ npm install  wio.db
 
 # Change Log
 - Removed
-  - arrayHasValue method.
+  - <db>.arrayHasValue method.
+  - JsonDatabase.DBCollection prop. (static)
+  - <db>.totalDBSize prop.
 - Added
-  - filter method
+  - <db>.filter method.
+- Updated
+  - <db>.findAndDelete method.
 
 ## Nasıl Kullanılır? || how to use?
 
@@ -31,14 +35,14 @@ const db = new JsonDatabase("myDatabase");
 const yamldb = new YamlDatabase("myDatabase");
 
 // Data set | get
-db.set("data1", 1);
-db.get("data1");
-db.fetch("data1");
+db.set("test", 1);
+db.get("test");
+db.fetch("test");
 
 // Data exists
 
-db.has("data1");
-db.exists("data2");
+db.has("test");
+db.exists("test");
 
 // Get all data
 
@@ -51,32 +55,31 @@ db.toJson(5); || db.toJson();
 
 // Delete data
 
-db.delete("key");
+db.delete("test");
 db.deleteAll();
 
 // Get data type
 
-db.type("data1"); // ---> number
+db.type("test"); // ---> number
 
 // DB Array methods
-db.push("array1", 10);
-db.pull("array1", 10);
-db.arrayHasValue("array1", 10);
+db.push("testArray", 10);
+db.pull("testArray", (element, index, array) => element < 10, true); // Multiple options = true. (default false)
 db.valueArray();
 db.keyArray();
 
 // DB Math metods
 
-db.math("data1","*", 3);
-db.add("data1", 10);
-db.substr("data1", 5);
+db.math("test","*", 3);
+db.add("test", 10);
+db.substr("test", 5);
 
 // DB Finding methods
 
-db.includes("da");
-db.startsWith("da");
-db.findAndDelete((key,value) => {
-    return key.includes("data");
+db.includes("tes");
+db.startsWith("t");
+db.findAndDelete((element,db) => {
+    return element.ID.includes("test");
 });
 
 // Infos
