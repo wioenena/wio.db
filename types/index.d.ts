@@ -16,7 +16,7 @@ declare module "wio.db" {
         public path: string;
         public maxData: number;
         public size: number;
-        public constructor({ }: IOptions);
+        public constructor({ }?: IOptions);
         public set(key: string, value: V, autoWrite?: boolean): V;
         public get(key: string, defaultValue?: V): V;
         public fetch(key: string, defaultValue?: V): V;
@@ -50,7 +50,7 @@ declare module "wio.db" {
         public path: string;
         public maxData: number;
         public size: number;
-        public constructor({ }: IOptions);
+        public constructor({ }?: IOptions);
         public set(key: string, value: V, autoWrite?: boolean): V;
         public get(key: string, defaultValue?: V): V;
         public fetch(key: string, defaultValue?: V): V;
