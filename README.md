@@ -14,13 +14,13 @@ npm install  wio.db
 
 # Change Log
 - Removed
-  - <db>.arrayHasValue method.
+  - \<db\>.arrayHasValue method.
   - JsonDatabase.DBCollection prop. (static)
-  - <db>.totalDBSize prop.
+  - \<db\>.totalDBSize prop.
 - Added
-  - <db>.filter method.
+  - \<db\>.filter method.
 - Updated
-  - <db>.findAndDelete method.
+  - \<db\>.findAndDelete method.
 
 ## Nasıl Kullanılır? || how to use?
 
