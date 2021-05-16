@@ -55,7 +55,7 @@ class JsonDatabase {
             databaseName = databaseName.replace(basePath, "");
         }
 
-        if (databaseName.startsWith("./")) {
+        if (databaseName.startsWith(`.${path.sep}`)) {
             databaseName = databaseName.slice(1);
         }
 
@@ -92,13 +92,13 @@ class JsonDatabase {
             let targetDirPath = firstResolvedDir;
 
             for (const dirName of dirNames) {
-                const currentPath = `${targetDirPath}/${dirName}`;
+                const currentPath = `${targetDirPath}${path.sep}${dirName}`;
                 
                 if (!existsSync(currentPath)) {
                     mkdirSync(currentPath);
                 }
 
-                targetDirPath = `${targetDirPath}/${dirName}`;
+                targetDirPath = `${targetDirPath}${path.sep}${dirName}`;
             }
         }
 
