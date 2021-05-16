@@ -517,6 +517,13 @@ class JsonDatabase {
         }
         return deletedSize;
     }
+
+    get info() {
+        return {
+            size: this.size,
+            version:"4.0.21"
+        };
+    }
 }
 
 

@@ -526,10 +526,9 @@ class JsonDatabase {
     }
 
     get info() {
-        const { version } = require("../package-lock.json");
         return {
             size: this.size,
-            version
+            version:"4.0.21"
         };
     }
 }
