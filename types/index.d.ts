@@ -11,76 +11,90 @@
 
 declare module "wio.db" {
     export class JsonDatabase<V> {
-        public static DBCollection: Array<Database<unknown>>;
         private databaseName: string;
-        public constructor(databaseName?: string);
-        private handle(): boolean;
-        private save(): boolean;
-        public set(key: string, value: V): V;
-        public get(key: string): V;
-        public fetch(key: string): V;
+        private cache: object;
+        public path: string;
+        public maxData: number;
+        public size: number;
+        public constructor({ }: IOptions);
+        public set(key: string, value: V, autoWrite?: boolean): V;
+        public get(key: string, defaultValue?: V): V;
+        public fetch(key: string, defaultValue?: V): V;
         public exists(key: string): boolean;
         public has(key: string): boolean;
-        public all(limit?: number): Array<{ ID: string, data: V }>;
-        public fetchAll(limit?: number): Array<{ ID: string, data: V }>;
-        public toJSON(limit?: number): Object;
-        public delete(key: string): void;
+        public all(limit?: number): Array<Schema<V>>;
+        public fetchAll(limit?: number): Array<Schema<V>>;
+        public toJSON(limit?: number): { [key: string]: V };
+        public delete(key: string, autoWrite?: boolean): void;
         public deleteAll(): void;
-        public type(key: string): string | number | bigint | boolean | symbol | Array | undefined | object | Function;
-        public pull(key: string, value: V, multiple?: boolean): V;
+        public type(key: string): "string" | "number" | "bigint" | "boolean" | "symbol" | "array" | "undefined" | "object" | "function";
+        public pull(key: string, callbackfn: (element: any, index: number, array: Array<any>) => boolean, multiple?: boolean, thisArg?: any): V;
         public valueArray(): V[];
         public keyArray(): string[];
-        public math(key: string, operator: "+" | "-" | "*" | "/" | "%", value: V, goToNegative?: boolean): V;
+        public math(key: string, operator: "+" | "-" | "*" | "/" | "%", value: number, goToNegative?: boolean): V;
         public add(key: string, value: V): V;
-        public substr(key: string, value: V): V;
-        public push<T>(key: string, value: T): V;
-        public arrayHasValue<T>(key: string, value: T | T[]): boolean | object;
-        public includes(key: string): object;
-        public startsWith(key: string): object;
-        public findAndDelete(callbackfn: (key: string, value: V) => boolean): number;
+        public substr(key: string, value: V, goToNegative?: boolean): V;
+        public push(key: string, value: any): V;
+        public includes(key: string): Array<Schema<V>>;
+        public startsWith(key: string): Array<Schema<V>>;
+        public filter(callbackfn: (value: Schema<V>, index: number, array: Array<Schema<V>>) => boolean, thisArg?: any): Array<Schema<V>>;
+        public sort(callbackfn: (a: Schema<V>, b: Schema<V>) => number, thisArg?: any): Array<Schema<V>>;
         public destroy(): void;
-        public get size(): number;
-        public get totalDBSize(): number;
-        public get fileName(): string;
+        public findAndDelete(callbackfn: (key: string, value: V) => boolean): number;
+        public get info(): IInfo;
     }
 
     export class YamlDatabase<V> {
-
-        public static DBCollection: Array<Database<unknown>>;
         private databaseName: string;
-        public constructor(databaseName?: string);
-        private handle(): boolean;
-        private save(): boolean;
-        public set(key: string, value: V): V;
-        public get(key: string): V;
-        public fetch(key: string): V;
+        private cache: object;
+        public path: string;
+        public maxData: number;
+        public size: number;
+        public constructor({ }: IOptions);
+        public set(key: string, value: V, autoWrite?: boolean): V;
+        public get(key: string, defaultValue?: V): V;
+        public fetch(key: string, defaultValue?: V): V;
         public exists(key: string): boolean;
         public has(key: string): boolean;
-        public all(limit?: number): Array<{ ID: string, data: V }>;
-        public fetchAll(limit?: number): Array<{ ID: string, data: V }>;
-        public toJSON(limit?: number): Object;
-        public delete(key: string): void;
+        public all(limit?: number): Array<Schema<V>>;
+        public fetchAll(limit?: number): Array<Schema<V>>;
+        public toJSON(limit?: number): { [key: string]: V };
+        public delete(key: string, autoWrite?: boolean): void;
         public deleteAll(): void;
-        public type(key: string): string | number | bigint | boolean | symbol | Array | undefined | object | Function;
-        public pull(key: string, value: V, multiple?: boolean): V;
+        public type(key: string): "string" | "number" | "bigint" | "boolean" | "symbol" | "array" | "undefined" | "object" | "function";
+        public pull(key: string, callbackfn: (element: any, index: number, array: Array<any>) => boolean, multiple?: boolean, thisArg?: any): V;
         public valueArray(): V[];
         public keyArray(): string[];
-        public math(key: string, operator: "+" | "-" | "*" | "/" | "%", value: V, goToNegative?: boolean): V;
+        public math(key: string, operator: "+" | "-" | "*" | "/" | "%", value: number, goToNegative?: boolean): V;
         public add(key: string, value: V): V;
-        public substr(key: string, value: V): V;
-        public push<T>(key: string, value: T): V;
-        public arrayHasValue<T>(key: string, value: T | T[]): boolean | object;
-        public includes(key: string): object;
-        public startsWith(key: string): object;
-        public findAndDelete(callbackfn: (key: string, value: V) => boolean): number;
+        public substr(key: string, value: V, goToNegative?: boolean): V;
+        public push(key: string, value: any): V;
+        public includes(key: string): Array<Schema<V>>;
+        public startsWith(key: string): Array<Schema<V>>;
+        public filter(callbackfn: (value: Schema<V>, index: number, array: Array<Schema<V>>) => boolean, thisArg?: any): Array<Schema<V>>;
+        public sort(callbackfn: (a: Schema<V>, b: Schema<V>) => number, thisArg?: any): Array<Schema<V>>;
         public destroy(): void;
-        public get size(): number;
-        public get totalDBSize(): number;
-        public get fileName(): string;
+        public findAndDelete(callbackfn: (key: string, value: V) => boolean): number;
+        public get info(): IInfo;
     }
 
     export class DatabaseError extends Error {
         public constructor(message: string);
         public get name(): string;
+    }
+
+    export interface Schema<T> {
+        ID: string;
+        data: T
+    }
+    
+    export interface IOptions {
+        maxData?: number;
+        databaseName?: string;
+    }
+
+    export interface IInfo {
+        version: string;
+        size: number;
     }
 }
