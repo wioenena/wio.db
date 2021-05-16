@@ -166,6 +166,9 @@ class JsonDatabase {
      * @example db.get("test");
      */
     get(key, defaultValue = null) {
+        if (key === "" || typeof key !== "string") {
+            throw new DatabaseError("Unapproved key!");
+        }
         const data = get(this.#cache, key);
         return data === undefined ? defaultValue : data;    
     }
