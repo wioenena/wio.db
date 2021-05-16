@@ -26,7 +26,7 @@ npm install  wio.db
 Some bug fixed and performance improved.
 
 # Speed test
-![Speed](https://klasresim.com/i/w6lBLB)
+![Speed](https://i.resmim.net/w6lBLB.jpg)
 
 ## Nasıl Kullanılır? || how to use?
 
