@@ -7,13 +7,16 @@
 ```npm
 npm install  wio.db
 ```
-# News
-Yaml Support<br>
-    - Json specific features have also been added to yaml
 
 # Uyarı || Warning
 - Node sürümü 12'den büyük olması gerekli gereklidir.
-- Node version must be greater than 12
+- Node version must be greater than 12.
+
+# Change Log
+- Removed
+  - arrayHasValue method.
+- Added
+  - filter method
 
 ## Nasıl Kullanılır? || how to use?
 
