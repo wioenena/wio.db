@@ -19,6 +19,7 @@ npm install  wio.db
   - \<db\>.totalDBSize prop.
 - Added
   - \<db\>.filter method.
+  - \<db\>.info prop.
 - Updated
   - \<db\>.findAndDelete method.
 
@@ -57,6 +58,9 @@ db.toJson(5); || db.toJson();
 
 db.delete("test");
 db.deleteAll();
+db.findAndDelete((element,db) => {
+    return element.ID.includes("test");
+});
 
 // Get data type
 
@@ -78,15 +82,10 @@ db.substr("test", 5);
 
 db.includes("tes");
 db.startsWith("t");
-db.findAndDelete((element,db) => {
-    return element.ID.includes("test");
-});
 
 // Infos
 console.log(db.size);
-console.log(db.totalDBSize);
-console.log(JsonDatabase.DBCollection);
-
+console.log(db.info);
 
 // Destroy DB
 db.destroy();
