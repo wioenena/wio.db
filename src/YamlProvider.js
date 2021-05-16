@@ -64,6 +64,7 @@ class JsonDatabase {
         }
 
         
+        
         if (!databaseName.endsWith(".yml")) {
             if (databaseName.endsWith(path.sep)) {
                 databaseName+="db.yml";

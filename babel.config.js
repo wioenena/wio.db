@@ -4,3 +4,4 @@ module.exports = {
     '@babel/plugin-proposal-private-methods'
   ]
 };
+

@@ -12,7 +12,7 @@
 declare module "wio.db" {
     export class JsonDatabase<V> {
         private databaseName: string;
-        private cache: object;
+        private cache: { [key: string]: V };
         public path: string;
         public maxData: number;
         public size: number;
@@ -40,13 +40,13 @@ declare module "wio.db" {
         public filter(callbackfn: (value: Schema<V>, index: number, array: Array<Schema<V>>) => boolean, thisArg?: any): Array<Schema<V>>;
         public sort(callbackfn: (a: Schema<V>, b: Schema<V>) => number, thisArg?: any): Array<Schema<V>>;
         public destroy(): void;
-        public findAndDelete(callbackfn: (key: string, value: V) => boolean): number;
+        public findAndDelete(callbackfn: (key: string, value: V) => boolean, thisArg?: any): number;
         public get info(): IInfo;
     }
 
     export class YamlDatabase<V> {
         private databaseName: string;
-        private cache: object;
+        private cache: { [key: string]: V };
         public path: string;
         public maxData: number;
         public size: number;
@@ -74,7 +74,7 @@ declare module "wio.db" {
         public filter(callbackfn: (value: Schema<V>, index: number, array: Array<Schema<V>>) => boolean, thisArg?: any): Array<Schema<V>>;
         public sort(callbackfn: (a: Schema<V>, b: Schema<V>) => number, thisArg?: any): Array<Schema<V>>;
         public destroy(): void;
-        public findAndDelete(callbackfn: (key: string, value: V) => boolean): number;
+        public findAndDelete(callbackfn: (key: string, value: V) => boolean, thisArg?: any): number;
         public get info(): IInfo;
     }
 
