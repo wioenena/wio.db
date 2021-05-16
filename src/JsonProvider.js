@@ -193,8 +193,7 @@ class JsonDatabase {
      * @example db.exists("test");
      */
     exists(key) {
-        const data = this.get(key);
-        return data !== undefined && data !== null;
+        return this.#cache.hasOwnProperty(key);
     }
 
     /**
