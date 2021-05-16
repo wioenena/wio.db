@@ -1,6 +1,6 @@
 {
     "name": "wio.db",
-    "version": "4.0.20",
+    "version": "4.0.21",
     "description": "Gözle okunabilir database modülü.",
     "main": "index.js",
     "directories": {

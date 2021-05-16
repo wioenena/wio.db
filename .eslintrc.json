@@ -13,7 +13,6 @@
             "error",
             "always"
         ],
-        
         "semi-style": "error",
         "no-extra-semi": "error",
         "no-invalid-regexp": "error",

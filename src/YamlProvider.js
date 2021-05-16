@@ -62,9 +62,7 @@ class JsonDatabase {
         if (!databaseName.startsWith(path.sep)) {
             databaseName = path.sep + databaseName;
         }
-
-        
-        
+ 
         if (!databaseName.endsWith(".yml")) {
             if (databaseName.endsWith(path.sep)) {
                 databaseName+="db.yml";
