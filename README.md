@@ -20,8 +20,11 @@ npm install  wio.db
 - Added
   - \<db\>.filter method.
   - \<db\>.info prop.
+  - Options -> maxDataSize
+    - Data limit added.
 - Updated
   - \<db\>.findAndDelete method.
+
 
 Some bug fixed and performance improved.
 
@@ -37,8 +40,14 @@ const {
     YamlDatabase
 } = require("wio.db");
 
-const db = new JsonDatabase("myDatabase");
-const yamldb = new YamlDatabase("myDatabase");
+const db = new JsonDatabase({
+  databasePath:"./databases/myJsonDatabase.json",
+  maxDataSize: 100
+});
+
+const yamldb = new YamlDatabase({
+  databasePath: "./databases/myYamlDatabase.yml"
+});
 
 // Data set | get
 db.set("test", 1);

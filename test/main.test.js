@@ -1,6 +1,19 @@
 const { JsonDatabase } = require("../index");
-
-
+new JsonDatabase(
+    {
+        databaseName: `${process.cwd()}/databases/example1/example1.json`
+    });
+new JsonDatabase({
+    databaseName: "./databases/example2/example2.json",
+});
+new JsonDatabase({
+    databaseName: "/databases/example3/example3.json",
+});
+new JsonDatabase(
+    {
+        databaseName: `${process.cwd()}./databases/example4/example4.json`
+    }
+);
 
 
 
@@ -33,6 +46,16 @@ describe("Json class all controls", () => {
             new JsonDatabase(
                 {
                     databaseName: "/databases/example3/example3.json"
+                }
+            ).path
+        );
+    });
+
+    it("databaseName with process.cwd() and ./", () => {
+        console.log(
+            new JsonDatabase(
+                {
+                    databaseName: `${process.cwd()}./databases/example4/example4.json`
                 }
             ).path
         );

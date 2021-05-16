@@ -35,15 +35,15 @@ class JsonDatabase {
      * @constructor
      */
     constructor({
-        databaseName = "db.json",
-        maxData = null
+        databasePath = "databases/db.json",
+        maxDataSize = null
     } = {}) {
 
-        if (maxData !== null && typeof maxData !== "number") {
+        if (maxDataSize !== null && typeof maxDataSize !== "number") {
             throw new DatabaseError("The maximum limit must be in number type!");
         }
         
-        if (maxData !== null && maxData < 1) {
+        if (maxDataSize !== null && maxDataSize < 1) {
             throw new DatabaseError("Inappropriate range for the limit!");
         }
         
@@ -51,30 +51,30 @@ class JsonDatabase {
         
         let basePath = process.cwd();
 
-        if (databaseName.startsWith(basePath)) {
-            databaseName = databaseName.replace(basePath, "");
+        if (databasePath.startsWith(basePath)) {
+            databasePath = databasePath.replace(basePath, "");
         }
 
-        if (databaseName.startsWith(`.${path.sep}`)) {
-            databaseName = databaseName.slice(1);
+        if (databasePath.startsWith(`.${path.sep}`)) {
+            databasePath = databasePath.slice(1);
         }
 
-        if (!databaseName.startsWith(path.sep)) {
-            databaseName = path.sep + databaseName;
+        if (!databasePath.startsWith(path.sep)) {
+            databasePath = path.sep + databasePath;
         }
 
         
-        if (!databaseName.endsWith(".json")) {
-            if (databaseName.endsWith(path.sep)) {
-                databaseName += "db.json";
+        if (!databasePath.endsWith(".json")) {
+            if (databasePath.endsWith(path.sep)) {
+                databasePath += "db.json";
             } else {
-                databaseName+=".json";
+                databasePath += ".json";
             }
         }
 
-        basePath = `${basePath}${databaseName}`;
+        basePath = `${basePath}${databasePath}`;
 
-        const dirNames = databaseName.split(path.sep).slice(1);
+        const dirNames = databasePath.split(path.sep).slice(1);
         
         const length = dirNames.length;
 
@@ -113,7 +113,7 @@ class JsonDatabase {
         /**
          * @type {number}
          */
-        this.maxData = maxData;
+        this.maxDataSize = maxDataSize;
 
         this.size = 0;
     }
@@ -144,7 +144,7 @@ class JsonDatabase {
             throw new DatabaseError("autoWrite parameter must be true or false!");
         }
 
-        if (typeof this.maxData === "number" && this.size >= this.maxData) {
+        if (typeof this.maxDataSize === "number" && this.size >= this.maxDataSize) {
             throw new DatabaseError("Data limit exceeded!");
         }
 

@@ -11,10 +11,9 @@
 
 declare module "wio.db" {
     export class JsonDatabase<V> {
-        private databaseName: string;
         private cache: { [key: string]: V };
         public path: string;
-        public maxData: number;
+        public maxDataSize: number;
         public size: number;
         public constructor({ }?: IOptions);
         public set(key: string, value: V, autoWrite?: boolean): V;
@@ -45,10 +44,9 @@ declare module "wio.db" {
     }
 
     export class YamlDatabase<V> {
-        private databaseName: string;
         private cache: { [key: string]: V };
         public path: string;
-        public maxData: number;
+        public maxDataSize: number;
         public size: number;
         public constructor({ }?: IOptions);
         public set(key: string, value: V, autoWrite?: boolean): V;
@@ -89,8 +87,8 @@ declare module "wio.db" {
     }
     
     export interface IOptions {
-        maxData?: number;
-        databaseName?: string;
+        maxDataSize?: number;
+        databasePath?: string;
     }
 
     export interface IInfo {

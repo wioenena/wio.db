@@ -8,6 +8,6 @@
 
 
 export interface IOptions {
-    maxData?: number;
-    databaseName?: string;
+    maxDataSize?: number;
+    databasePath?: string;
 }
