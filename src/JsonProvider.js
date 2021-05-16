@@ -65,7 +65,11 @@ class JsonDatabase {
 
         
         if (!databaseName.endsWith(".json")) {
-            databaseName += "db.json";
+            if (databaseName.endsWith(path.sep)) {
+                databaseName += "db.json";
+            } else {
+                databaseName+=".json";
+            }
         }
 
         basePath = `${basePath}${databaseName}`;
