@@ -223,6 +223,11 @@ describe("Json class all controls", () => {
         console.log(db.sort((a, b) => b.data - a.data));
     });
 
+    it("filter", () => {
+        console.log(db.filter((value) => !!value));
+    });
+    
+
     it("size", () => {
         console.log(db.size);
     });
