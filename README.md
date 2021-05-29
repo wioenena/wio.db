@@ -41,8 +41,7 @@ const {
 } = require("wio.db");
 
 const db = new JsonDatabase({
-  databasePath:"./databases/myJsonDatabase.json",
-  maxDataSize: 100
+  databasePath:"./databases/myJsonDatabase.json"
 });
 
 const yamldb = new YamlDatabase({
