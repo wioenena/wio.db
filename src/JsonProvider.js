@@ -50,7 +50,6 @@ class JsonDatabase {
 
         
         let basePath = process.cwd();
-
         if (databasePath.startsWith(basePath)) {
             databasePath = databasePath.replace(basePath, "");
         }
