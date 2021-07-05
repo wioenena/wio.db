@@ -1,54 +1,26 @@
 const DatabaseError = require("./Error");
-const path = require('path');
-const {
-    existsSync,
-    mkdirSync,
-    writeFileSync,
-    readFileSync,
-    unlinkSync
-} = require("fs");
+const path = require("path");
+const { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } = require("fs");
 const { set, get, unset } = require("lodash");
-
-
-
-
-
-
-
-
-
 
 /**
  * @type {JsonDatabase<V>}
  * @template V
  */
 class JsonDatabase {
-
-    /**
-     * @private
-     * @type {object}
-     */
-    #cache = {};
-    
     /**
      * @param {import("./Types/IOptions").IOptions} options
      * @constructor
      */
-    constructor({
-        databasePath = "databases/db.json",
-        maxDataSize = null
-    } = {}) {
-
+    constructor({ databasePath = "databases/db.json", maxDataSize = null } = {}) {
         if (maxDataSize !== null && typeof maxDataSize !== "number") {
             throw new DatabaseError("The maximum limit must be in number type!");
         }
-        
+
         if (maxDataSize !== null && maxDataSize < 1) {
             throw new DatabaseError("Inappropriate range for the limit!");
         }
-        
 
-        
         let basePath = process.cwd();
         if (databasePath.startsWith(basePath)) {
             databasePath = databasePath.replace(basePath, "");
@@ -62,7 +34,6 @@ class JsonDatabase {
             databasePath = path.sep + databasePath;
         }
 
-        
         if (!databasePath.endsWith(".json")) {
             if (databasePath.endsWith(path.sep)) {
                 databasePath += "db.json";
@@ -74,7 +45,7 @@ class JsonDatabase {
         basePath = `${basePath}${databasePath}`;
 
         const dirNames = databasePath.split(path.sep).slice(1);
-        
+
         const length = dirNames.length;
 
         if (length > 1) {
@@ -92,7 +63,7 @@ class JsonDatabase {
 
             for (const dirName of dirNames) {
                 const currentPath = `${targetDirPath}${path.sep}${dirName}`;
-                
+
                 if (!existsSync(currentPath)) {
                     mkdirSync(currentPath);
                 }
@@ -105,10 +76,8 @@ class JsonDatabase {
 
         if (!existsSync(this.path)) {
             writeFileSync(this.path, "{}");
-        } else {
-            this.#cache = JSON.parse(readFileSync(this.path, "utf-8"));
         }
-        
+
         /**
          * @type {number}
          */
@@ -118,14 +87,13 @@ class JsonDatabase {
     }
 
     /**
-     * Veri kaydedersiniz.
+     *
      * @param {string} key Key
      * @param {V} value Value
      * @param {boolean} [autoWrite=true] Automatic write setting.
      * @example db.set("test",3);
      */
-    set(key, value, autoWrite=true) {
-
+    set(key, value, autoWrite = true) {
         if (key === "" || typeof key !== "string") {
             throw new DatabaseError("Unapproved key!");
         }
@@ -147,10 +115,11 @@ class JsonDatabase {
             throw new DatabaseError("Data limit exceeded!");
         }
 
-        set(this.#cache, key, value);
+        const jsonData = this.toJSON();
 
-        if (autoWrite)
-            writeFileSync(this.path, JSON.stringify(this.#cache, null, 4));
+        set(jsonData, key, value);
+
+        if (autoWrite) writeFileSync(this.path, JSON.stringify(jsonData, null, 4));
 
         this.size++;
 
@@ -158,24 +127,25 @@ class JsonDatabase {
     }
 
     /**
-     * Veri çekersiniz.
+     *
      * @param {string} key Key
      * @param {V} [defaultValue=null] If there is no value, the default value to return.
      * @returns {V}
      * @example db.get("test");
      */
     get(key, defaultValue = null) {
-        
         if (key === "" || typeof key !== "string") {
             throw new DatabaseError("Unapproved key!");
         }
-        
-        const data = get(this.#cache, key);
-        return data === undefined ? defaultValue : data;    
+
+        const jsonData = this.toJSON();
+
+        const data = get(jsonData, key);
+        return data === undefined ? defaultValue : data;
     }
-    
+
     /**
-     * Veri çekersiniz.
+     *
      * @param {string} key Key
      * @param {V} [defaultValue=null] If there is no value, the default value to return.
      * @returns {V}
@@ -186,17 +156,17 @@ class JsonDatabase {
     }
 
     /**
-     * Veri var mı yok mu kontrol eder.
+     *
      * @param {string} key Key
      * @returns {boolean}
      * @example db.exists("test");
      */
     exists(key) {
-        return this.#cache.hasOwnProperty(key);
+        return this.toJSON().hasOwnProperty(key);
     }
 
     /**
-     * Veri var mı yok mu kontrol eder.
+     *
      * @param {string} key Key
      * @returns {boolean}
      * @example db.has("test");
@@ -206,21 +176,23 @@ class JsonDatabase {
     }
 
     /**
-     * Belirtilen miktarda veri döner.
+     *
      * @param {number} limit Limit
      * @returns {Array<Schema<V>>}>}
      * @example db.all(5);
      */
     all(limit = 0) {
-        if(typeof limit !== "number") {
+        if (typeof limit !== "number") {
             throw new DatabaseError("Must be of limit number type!");
         }
-        
+
+        const jsonData = JSON.parse(readFileSync(this.path, "utf-8"));
+
         const arr = [];
-        for (const key in this.#cache) {
+        for (const key in jsonData) {
             arr.push({
                 ID: key,
-                data: this.#cache[key]
+                data: jsonData[key]
             });
         }
 
@@ -228,7 +200,7 @@ class JsonDatabase {
     }
 
     /**
-     * Belirtilen miktarda veri döner.
+     *
      * @param {number} [limit] Limit
      * @returns {Array<Schema<V>>}
      * @example db.fetchAll(5);
@@ -238,7 +210,7 @@ class JsonDatabase {
     }
 
     /**
-     * Belirtilen miktarda Object tipinde verileri döner.
+     *
      * @param {number} [limit] Limit
      * @returns {{[key:string]:V}}
      * @example db.toJSON();
@@ -256,14 +228,13 @@ class JsonDatabase {
     }
 
     /**
-     * Veri siler.
+     *
      * @param {string} key Key
      * @param {boolean} autoWrite Automatic write setting.
      * @returns {void}
      * @example db.delete("test");
      */
     delete(key, autoWrite = true) {
-
         if (key === "" || typeof key !== "string") {
             throw new DatabaseError("Unapproved key!");
         }
@@ -272,23 +243,23 @@ class JsonDatabase {
             throw new DatabaseError("autoWrite parameter must be true or false!");
         }
 
-        this.size--;
-        unset(this.#cache, key);
+        const jsonData = this.toJSON();
 
-        if (autoWrite)
-            writeFileSync(this.path, JSON.stringify(this.#cache, null, 4));
+        this.size--;
+        unset(jsonData, key);
+
+        if (autoWrite) writeFileSync(this.path, JSON.stringify(jsonData, null, 4));
         return;
     }
 
     /**
-     * Verilerin hepsini siler.
+     *
      * @returns {void}
      * @example db.deleteAll();
      */
     deleteAll() {
         writeFileSync(this.path, "{}");
         this.size = 0;
-        this.#cache = {};
         return;
     }
 
@@ -304,7 +275,7 @@ class JsonDatabase {
     }
 
     /**
-     * Array'den veri siler.
+     *
      * @param {string} key Key
      * @param {boolean} multiple Whether to target multiple targets.
      * @param {(element,index,array) => boolean} callbackfn Value
@@ -319,14 +290,13 @@ class JsonDatabase {
         if (typeof multiple !== "boolean") {
             throw new DatabaseError("multiple parameter must be true or false!");
         }
-        if (thisArg)
-            callbackfn = callbackfn.bind(thisArg);
+        if (thisArg) callbackfn = callbackfn.bind(thisArg);
 
         const length = data.length;
 
         if (multiple) {
             const newArray = [];
-            
+
             for (let i = 0; i < length; i++) {
                 if (!callbackfn(data[i], i, data)) {
                     newArray.push(data[i]);
@@ -338,12 +308,12 @@ class JsonDatabase {
             const index = data.findIndex(callbackfn);
             data.splice(index, 1);
         }
-        
+
         return this.set(key, data);
     }
 
     /**
-     * Value'leri array şeklinde döner.
+     *
      * @returns {V[]} Values[]
      * @example db.valueArray();
      */
@@ -353,7 +323,7 @@ class JsonDatabase {
     }
 
     /**
-     * ID'leri array şeklinde döner.
+     *
      * @returns {string[]} ID[]
      * @example db.keyArray();
      */
@@ -361,9 +331,9 @@ class JsonDatabase {
         const all = this.all();
         return all.map((element) => element.ID);
     }
-    
+
     /**
-     * Matematik işlemleri yapar.
+     *
      * @param {string} key Key
      * @param {"+" | "-" | "*" | "/" | "%"} operator Operator
      * @param {number|string} value Value
@@ -372,12 +342,11 @@ class JsonDatabase {
      * @example db.math("test","/",5,false);
      */
     math(key, operator, value, goToNegative = false) {
-        
         // @ts-ignore
         if (Array.isArray(value) || isNaN(value)) {
             throw new DatabaseError(`The type of value is not a number.`);
         }
-        
+
         if (value <= 0) throw new DatabaseError(`Value cannot be less than 1.`);
         value = Number(value);
         if (typeof goToNegative !== "boolean") throw new DatabaseError(`The goToNegative parameter must be of boolean type.`);
@@ -419,7 +388,7 @@ class JsonDatabase {
     }
 
     /**
-     * Toplama işlemi yapar.
+     *
      * @param {string} key Key
      * @param {number} value Value
      * @returns {any}
@@ -430,7 +399,7 @@ class JsonDatabase {
     }
 
     /**
-     * Çıkarma işlemi yapar.
+     *
      * @param {string} key Key
      * @param {number} value Value
      * @param {boolean} [goToNegative] Eksilere düşüp düşmeyeceği
@@ -440,9 +409,9 @@ class JsonDatabase {
     substr(key, value, goToNegative) {
         return this.math(key, "-", value, goToNegative);
     }
-    
+
     /**
-     * Array'a veri ekler.
+     *
      * @param {string} key Key
      * @param {any} value Value
      * @returns {V}
@@ -464,7 +433,7 @@ class JsonDatabase {
     }
 
     /**
-     * Database'de ID'lerin içinde belirtilen veri varsa o verileri getirir.
+     *
      * @param {string} key Key
      * @returns {Array<Schema<V>>}
      * @example db.includes("te");
@@ -474,7 +443,7 @@ class JsonDatabase {
     }
 
     /**
-     * Database'de ID'leri belirtilen veri ile başlayan verileri getirir.
+     *
      * @param {string} key Key
      * @returns {Array<Schema<V>>}
      * @example db.startsWith("te");
@@ -502,7 +471,7 @@ class JsonDatabase {
     }
 
     /**
-     * İsmi belirtilen database dosyasını siler.
+     *
      * @returns {void}
      */
     destroy() {
@@ -510,7 +479,7 @@ class JsonDatabase {
     }
 
     /**
-     * Çagrılan fonksiyon true değer dönerse onunla bağlantılı olan verileri siler.
+     *
      * @param {(element:{ID:string,data:V},provider:this) => boolean} callbackfn
      * @param {any} [thisArg]
      * @returns {number}
@@ -531,26 +500,12 @@ class JsonDatabase {
     get info() {
         return {
             size: this.size,
-            version:"4.0.21"
+            version: "4.0.21"
         };
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
 module.exports = JsonDatabase;
-
-
-
 
 /**
  * @template T
